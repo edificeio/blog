@@ -198,10 +198,9 @@ export function LibraryDelegate(
           resolve();
         })
         .then(function () {
-          /* $location.path("/blog/explorer"); */
-          window.open("/blog/explorer", "_self");
-          if ($scope.currentFolder) return $scope.currentFolder.sync();
-          else return null;
+          setTimeout(() => {
+            window.open("/blog/explorer", "_self");
+          }, 1000);
         })
         .then(function () {
           $scope.$apply();
