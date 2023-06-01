@@ -180,6 +180,29 @@ public class BlogController extends BaseController {
 		return promise.future();
 	}
 
+	private Future<Either<String, JsonObject>> convert(final HtmlTransformationRequest payload) {
+		final Promise<Either<String, JsonObject>>  promise = Promise.promise();
+		final HttpClientRequest req = this.httpclient.post("/transform", e -> {
+			if(e.statusCode() == 200) {
+				if (Action.JSON2HTML.equals(payload.getAction())) {
+					e.bodyHandler(body -> {
+						promise.complete(new Either.Left<>(body.toString()));
+					});
+				} else {
+					e.bodyHandler(body -> {
+						promise.complete(new Either.Right<>(new JsonObject(body.toString())));
+					});
+				}
+			} else {
+				promise.fail("transform.error." + e.statusCode());
+			}
+		});
+		req.exceptionHandler(promise::fail);
+		req.putHeader("Content-Type", "application/json");
+		req.end(JsonObject.mapFrom(payload).encode());
+		return promise.future();
+	}
+
 	@Get("/poc/files")
 	public void listFiles(HttpServerRequest request) {
 		this.vertx.fileSystem().readDir(this.rootPoc, res -> {
@@ -201,13 +224,33 @@ public class BlogController extends BaseController {
 		final String format = params.get("format");
 		final String path = Paths.get(this.rootPoc, fileId).toAbsolutePath().toString();
 		this.vertx.fileSystem().exists(path, res -> {
-			if(res.succeeded()) {
-				final HttpServerResponse response = request.response();
-				response.putHeader("content-type", "text/html; charset=utf-8");
-				response.setStatusCode(200);
-				response.sendFile(path);
+			if(res.succeeded() && res.result()) {
+				if("new".equals(format)) {
+					this.vertx.fileSystem().readFile(path, fileContent -> {
+						if(fileContent.succeeded()) {
+							convert(new HtmlTransformationRequest(fileContent.result().toString()))
+									.onFailure(th -> {
+										Renders.renderError(request);
+										th.printStackTrace();
+									})
+									.onSuccess(transformResponse -> {
+										Renders.renderJson(request, transformResponse.right().getValue());
+									});
+						} else {
+							fileContent.cause().printStackTrace();;
+							Renders.renderError(request);
+						}
+					});
+				} else {
+					final HttpServerResponse response = request.response();
+					response.putHeader("content-type", "text/html; charset=utf-8");
+					response.setStatusCode(200);
+					response.sendFile(path);
+				}
 			} else {
-				res.cause().printStackTrace();
+				if(res.failed()) {
+					res.cause().printStackTrace();
+				}
 				Renders.renderError(request);
 			}
 		});

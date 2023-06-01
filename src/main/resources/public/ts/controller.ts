@@ -126,7 +126,9 @@ export const blogController = ng.controller('BlogController', ['$scope', '$sce',
 	$scope.blogs = model.blogs;
 	$scope.comment = new Behaviours.applicationsBehaviours.blog.model.Comment();
 	$scope.lang = idiom;
-	$scope.demoFile = "";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    $scope.demoFile = urlParams.get('file')
 
 	loadPoc();
 
@@ -134,17 +136,20 @@ export const blogController = ng.controller('BlogController', ['$scope', '$sce',
         const result = await fetch("/blog/poc/files");
         $scope.demoFiles = await result.json();
         $scope.demoFiles.sort();
+	    $scope.onChangeDemoFile();
 	}
-	$scope.onChangeDemoFile = async function(event) {
+	$scope.onChangeDemoFile = async function() {
 	    $scope.pocDataRaw = '';
         $scope.pocDataOld = '';
         $scope.pocDataNew = '';
+        $scope.iframeURL = '';
 	    const filename = this.demoFile;
 	    let rawData = await fetch(`/blog/poc/files/${filename}`);
 	    rawData = await rawData.text();
         $scope.pocDataRaw = rawData;
         $scope.pocDataOld = rawData + '';
         $scope.pocDataNew = rawData + '';
+        $scope.iframeURL = 'http://localhost:3001/?file=' + filename;
 	}
 
 	//=== Events
