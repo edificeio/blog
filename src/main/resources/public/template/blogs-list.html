@@ -212,3 +212,17 @@
 		</div>
 	</div>
 </lightbox>
+
+<div>
+	<div>
+		<select ng-model="demoFile" ng-options="demoFileName for demoFileName in demoFiles" ng-change="onChangeDemoFile($event)"></select>
+		<div ng-if="pocDataOld" style="width: 50%;">
+			<h4>Ancien éditeur</h4>
+			<editor ng-model="pocDataOld"></editor>
+		</div>
+		<div ng-if="pocDataNew" style="width: 50%;">
+			<h4>Nouvel éditeur</h4>
+			<iframe ng-src="http://localhost:3001/?file=[[demoFile]]"></iframe>
+		</div>
+	</div>
+</div>

@@ -3,6 +3,7 @@ import { LibraryDelegate, LibraryControllerScope } from './controllers/library';
 import { PostModel, BlogModel, CommentModel, ComentsModel, PostsModel, State } from './controllers/commons';
 import { Blog, Folders } from './models';
 //=== Types
+import http from "axios";
 
 interface BlogControllerScope extends LibraryControllerScope {
 	template: typeof template;
@@ -125,6 +126,27 @@ export const blogController = ng.controller('BlogController', ['$scope', '$sce',
 	$scope.blogs = model.blogs;
 	$scope.comment = new Behaviours.applicationsBehaviours.blog.model.Comment();
 	$scope.lang = idiom;
+	$scope.demoFile = "";
+
+	loadPoc();
+
+	async function loadPoc() {
+        const result = await fetch("/blog/poc/files");
+        $scope.demoFiles = await result.json();
+        $scope.demoFiles.sort();
+	}
+	$scope.onChangeDemoFile = async function(event) {
+	    $scope.pocDataRaw = '';
+        $scope.pocDataOld = '';
+        $scope.pocDataNew = '';
+	    const filename = this.demoFile;
+	    let rawData = await fetch(`/blog/poc/files/${filename}`);
+	    rawData = await rawData.text();
+        $scope.pocDataRaw = rawData;
+        $scope.pocDataOld = rawData + '';
+        $scope.pocDataNew = rawData + '';
+	}
+
 	//=== Events
 	editorEvents.onLinkerAdd.subscribe((body:LinkerEventBody)=>{
 		if($scope.blog && $scope.blog.enablePublic){

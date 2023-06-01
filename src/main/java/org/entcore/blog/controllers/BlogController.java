@@ -25,6 +25,7 @@ package org.entcore.blog.controllers;
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import static fr.wseduc.mongodb.MongoDb.isOk;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -33,13 +34,20 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.blog.Blog;
@@ -65,8 +73,10 @@ import org.entcore.common.utils.ResourceUtils;
 import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -79,9 +89,13 @@ public class BlogController extends BaseController {
 	private BlogTimelineService timelineService;
 	private ShareService shareService;
 	private EventHelper eventHelper;
+
+	private String rootPoc;
 	private final MongoDb mongo;
 	private static final String PUBLIC_RESOURCE_NAME = "blog_public";
 	private static final String PRIVATE_RESOURCE_NAME = "blog_private";
+
+	private HttpClient httpclient;
 
 	public BlogController(MongoDb mongo){
 		this.mongo = mongo;
@@ -89,7 +103,7 @@ public class BlogController extends BaseController {
 
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		MongoDb mongo = MongoDb.getInstance();
 		this.postService = new DefaultPostService(mongo, config.getInteger("post-search-word-min-size", 4), PostController.LIST_ACTION);
@@ -101,6 +115,11 @@ public class BlogController extends BaseController {
 		this.shareService = new MongoDbShareService(eb, mongo, "blogs", securedActions, groupedActions);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Blog.class.getSimpleName());
 		eventHelper = new EventHelper(eventStore);
+		this.rootPoc = config.getString("poc-root-demo-files", "/opt/projects/poc-editeur-data/old-format");
+		HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost("localhost")
+				.setDefaultPort(3100);
+		this.httpclient = vertx.createHttpClient(options);
 	}
 
 	@Get("")
@@ -108,6 +127,109 @@ public class BlogController extends BaseController {
 	public void blog(HttpServerRequest request) {
 		renderView(request);
 		eventHelper.onAccess(request);
+	}
+
+	@Get("/poc/migrate")
+	public void migrate(HttpServerRequest request) {
+		loadEntries(0, MongoDb.getInstance());
+		Renders.render(request, new JsonObject().put("ok", true));
+	}
+
+	private void loadEntries(final int i, final MongoDb mongo) {
+		final QueryBuilder query = new QueryBuilder();
+		final JsonObject sort = null;
+		final JsonObject projection = new JsonObject().put("content", 1);
+		final int batchSize = 1000;
+		mongo.find("posts_poc",
+				MongoQueryBuilder.build(query),
+				sort, projection,
+				i * batchSize, batchSize, batchSize, data -> {
+					final JsonObject body = data.body();
+					if(isOk(body)) {
+						final JsonArray posts = body.getJsonArray("results");
+						if(posts.size() > 0) {
+							convertPosts(posts, 0, Promise.promise()).onSuccess(e -> loadEntries(i + 1, mongo));
+							System.out.println("Loaded " + posts.size() + " posts....");
+						} else {
+							System.out.println("Done");
+						}
+					} else {
+						System.out.println("Done");
+					}
+				}
+		);
+	}
+
+	private final Future<Void> convertPosts(final JsonArray posts, final int index, final Promise<Void> promise) {
+		if(index < posts.size()) {
+			final JsonObject j = new JsonObject()
+					.put("action", "html2json")
+					.put("document", posts.getJsonObject(index).getString("content"));
+			final HttpClientRequest req = this.httpclient.post("/transform", e -> {
+				convertPosts(posts, index + 1, promise);
+			});
+			req.exceptionHandler(e -> {
+				e.printStackTrace();
+				convertPosts(posts, index + 1, promise);
+			});
+			req.putHeader("Content-Type", "application/json");
+			req.end(j.encode());
+		} else {
+			promise.complete();
+		}
+		return promise.future();
+	}
+
+	@Get("/poc/files")
+	public void listFiles(HttpServerRequest request) {
+		this.vertx.fileSystem().readDir(this.rootPoc, res -> {
+			if(res.succeeded()) {
+				Renders.render(request, res.result().stream()
+						.map(path -> Paths.get(path).getFileName().toString())
+						.collect(Collectors.toList()));
+			} else {
+				res.cause().printStackTrace();
+				Renders.renderError(request);
+			}
+		});
+	}
+
+	@Get("/poc/files/:fileId")
+	public void getFile(HttpServerRequest request) {
+		final MultiMap params = request.params();
+		final String fileId = params.get("fileId");
+		final String format = params.get("format");
+		final String path = Paths.get(this.rootPoc, fileId).toAbsolutePath().toString();
+		this.vertx.fileSystem().exists(path, res -> {
+			if(res.succeeded()) {
+				final HttpServerResponse response = request.response();
+				response.putHeader("content-type", "text/html; charset=utf-8");
+				response.setStatusCode(200);
+				response.sendFile(path);
+			} else {
+				res.cause().printStackTrace();
+				Renders.renderError(request);
+			}
+		});
+	}
+
+	@Post("/poc/toJson")
+	public void transform(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, body -> {
+			final String fileId = request.params().get("fileId");
+			final String path = Paths.get("/opt/projects/poc-editeur-data/old-format", fileId).toAbsolutePath().toString();
+			this.vertx.fileSystem().exists(path, res -> {
+				if (res.succeeded()) {
+					final HttpServerResponse response = request.response();
+					response.putHeader("content-type", "text/html; charset=utf-8");
+					response.setStatusCode(200);
+					response.sendFile(path);
+				} else {
+					res.cause().printStackTrace();
+					Renders.renderError(request);
+				}
+			});
+		});
 	}
 
 	@Get("/print/blog")
@@ -624,8 +746,8 @@ public class BlogController extends BaseController {
 			return;
 		}
         RequestUtils.bodyToJson(request, data -> {
-        	String slug = data.getString("slug");
-        	blog.isBlogExists(Optional.ofNullable(blogId),slug,evExists ->{
+			String slug = data.getString("slug");
+			blog.isBlogExists(Optional.ofNullable(blogId),slug,evExists ->{
 				if(evExists){
 					conflict(request);
 					return;
@@ -682,101 +804,101 @@ public class BlogController extends BaseController {
 		});
 		//check if visibility has changed
 		return futureBlog.map(blog->{
-			String oldVisibility = blog.getString("visibility","");
-			if(oldVisibility.equals(visibility)){
-				//nothing to change
-				return false;
-			}
-			return true;
-		})//change logo
-		.compose(changed->{
-			String icon = data.getString("thumbnail");
-			List<String> ids = ResourceUtils.extractIds(icon);
-			if(ids.isEmpty()){
-				return Future.succeededFuture(changed);
-			}
-			//
-			Future<Boolean> future = Future.future();
-			JsonObject j = new JsonObject()
-					.put("action", "changeVisibility")
-					.put("visibility", visibility)
-					.put("documentIds", new JsonArray(ids));
-			eb.send("org.entcore.workspace", j, r -> {
-				data.put("thumbnail", ResourceUtils.transformUrlTo(icon,ids,eVisibility));
-				future.complete(changed);
-			});
-			return future;
-		})//fetch post
-		.compose(changed ->{
-			if(!changed){
-				return Future.succeededFuture(new JsonArray());
-			}
-			Future<JsonArray> futureList = Future.future();
-			//fetch posts
-			postService.list(blogId, user, null, 0, "", null, true, event -> {
-				if (event.isRight()) {
-					JsonArray posts = event.right().getValue();
-					futureList.complete(posts);
-				}else{
-					futureList.fail(event.left().getValue());
-				}
-			});
-			return futureList;
-		})//transform content
-		.compose(posts -> {
-			if(posts.isEmpty()){
-				return Future.succeededFuture(new ArrayList<JsonObject>());
-			}
-			Future<List<JsonObject>> postToSave = Future.future();
-			Map<String, JsonObject> postByIds = new HashMap<>();
-			Map<String, List<String>> idsByPost = new HashMap<>();
-			List<String> allIds = new ArrayList<>();
-			for(Object elem : posts){
-				JsonObject post = (JsonObject)(elem);
-				String content = post.getString("content");
-				String id = post.getString("_id");
-				final List<String> currentIds = ResourceUtils.extractIds(content,inverse);
-				if(!currentIds.isEmpty()){
-					idsByPost.put(id,currentIds);
-					postByIds.put(id, post);
-				}
-				allIds.addAll(currentIds);
-			};
-			JsonObject j = new JsonObject()
-					.put("action", "changeVisibility")
-					.put("visibility", visibility)
-					.put("documentIds", new JsonArray(allIds));
-			if(allIds.size()>0){
-				eb.send("org.entcore.workspace", j, r -> {
-					List<JsonObject> toSave = new ArrayList<>(postByIds.values());
-					for(String postId : postByIds.keySet()){
-						JsonObject post = postByIds.get(postId);
-						String content = post.getString("content");
-						List<String> ids = idsByPost.get(postId);
-						content = ResourceUtils.transformUrlTo(content, ids,eVisibility);
-						post.put("content", content);
+					String oldVisibility = blog.getString("visibility","");
+					if(oldVisibility.equals(visibility)){
+						//nothing to change
+						return false;
 					}
-					postToSave.complete(toSave);
+					return true;
+				})//change logo
+				.compose(changed->{
+					String icon = data.getString("thumbnail");
+					List<String> ids = ResourceUtils.extractIds(icon);
+					if(ids.isEmpty()){
+						return Future.succeededFuture(changed);
+					}
+					//
+					Future<Boolean> future = Future.future();
+					JsonObject j = new JsonObject()
+							.put("action", "changeVisibility")
+							.put("visibility", visibility)
+							.put("documentIds", new JsonArray(ids));
+					eb.send("org.entcore.workspace", j, r -> {
+						data.put("thumbnail", ResourceUtils.transformUrlTo(icon,ids,eVisibility));
+						future.complete(changed);
+					});
+					return future;
+				})//fetch post
+				.compose(changed ->{
+					if(!changed){
+						return Future.succeededFuture(new JsonArray());
+					}
+					Future<JsonArray> futureList = Future.future();
+					//fetch posts
+					postService.list(blogId, user, null, 0, "", null, true, event -> {
+						if (event.isRight()) {
+							JsonArray posts = event.right().getValue();
+							futureList.complete(posts);
+						}else{
+							futureList.fail(event.left().getValue());
+						}
+					});
+					return futureList;
+				})//transform content
+				.compose(posts -> {
+					if(posts.isEmpty()){
+						return Future.succeededFuture(new ArrayList<JsonObject>());
+					}
+					Future<List<JsonObject>> postToSave = Future.future();
+					Map<String, JsonObject> postByIds = new HashMap<>();
+					Map<String, List<String>> idsByPost = new HashMap<>();
+					List<String> allIds = new ArrayList<>();
+					for(Object elem : posts){
+						JsonObject post = (JsonObject)(elem);
+						String content = post.getString("content");
+						String id = post.getString("_id");
+						final List<String> currentIds = ResourceUtils.extractIds(content,inverse);
+						if(!currentIds.isEmpty()){
+							idsByPost.put(id,currentIds);
+							postByIds.put(id, post);
+						}
+						allIds.addAll(currentIds);
+					};
+					JsonObject j = new JsonObject()
+							.put("action", "changeVisibility")
+							.put("visibility", visibility)
+							.put("documentIds", new JsonArray(allIds));
+					if(allIds.size()>0){
+						eb.send("org.entcore.workspace", j, r -> {
+							List<JsonObject> toSave = new ArrayList<>(postByIds.values());
+							for(String postId : postByIds.keySet()){
+								JsonObject post = postByIds.get(postId);
+								String content = post.getString("content");
+								List<String> ids = idsByPost.get(postId);
+								content = ResourceUtils.transformUrlTo(content, ids,eVisibility);
+								post.put("content", content);
+							}
+							postToSave.complete(toSave);
+						});
+					}else{
+						postToSave.complete(new ArrayList<>());
+					}
+					return postToSave;
+				})//save post content
+				.compose(postsToSave->{
+					if(postsToSave.isEmpty()){
+						return Future.succeededFuture(new JsonArray());
+					}
+					Future<JsonArray> future = Future.future();
+					postService.updateAllContents(postsToSave,res->{
+						if(res.isRight()){
+							future.complete(res.right().getValue());
+						}else{
+							future.fail(res.left().getValue());
+						}
+					});
+					return future;
 				});
-			}else{
-				postToSave.complete(new ArrayList<>());
-			}
-			return postToSave;
-		})//save post content
-		.compose(postsToSave->{
-			if(postsToSave.isEmpty()){
-				return Future.succeededFuture(new JsonArray());
-			}
-			Future<JsonArray> future = Future.future();
-			postService.updateAllContents(postsToSave,res->{
-				if(res.isRight()){
-					future.complete(res.right().getValue());
-				}else{
-					future.fail(res.left().getValue());
-				}
-			});
-			return future;
-		});
 	}
 
 	private void cleanFolders(String id, UserInfos user, List<String> recipientIds){
