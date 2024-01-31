@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import OldFormat, { loader } from "~/app/OldFormat";
 import Root from "~/app/Root";
 
 const routes = [
@@ -39,9 +38,14 @@ const routes = [
     ],
   },
   {
-    path: "/oldformat/:source",
-    element: <OldFormat />,
-    loader,
+    path: "/oldformat/:blogId/:postId",
+    async lazy() {
+      const { default: Component, loader } = await import("../app/OldFormat");
+      return {
+        loader,
+        Component,
+      };
+    },
     //FIXME errorElement: <ErrorPage />,
   },
 ];

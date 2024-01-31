@@ -7,7 +7,7 @@ export const BlogView = () => {
   const { blogId } = useParams();
   const { setBlog } = useStoreUpdaters();
 
-  const { data: blog } = useBlog(blogId!);
+  const { blog } = useBlog(blogId!);
   setBlog(blog);
 
   return <div></div>;

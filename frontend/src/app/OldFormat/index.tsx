@@ -1,39 +1,38 @@
 import { useEffect } from "react";
 
 import { useOdeTheme } from "@edifice-ui/react";
+import { ERROR_CODE, odeServices } from "edifice-ts-client";
+import { useTranslation } from "react-i18next";
 import { ActionFunctionArgs, useLoaderData } from "react-router-dom";
 
-//FIXME déplacer dans hooks ou features, à voir
-export async function loader({ request, params }: ActionFunctionArgs) {
-  const url = new URL(request.url);
-  const fileId = url.searchParams.get("fileId");
-  const docId = url.searchParams.get("docId");
+import { Post } from "~/store/models/post";
+import { notifyError } from "~/utils/BlogEvent";
 
-  const response = fileId
-    ? await fetch(`/pocediteur/files/${fileId}`)
-    : await fetch(`/pocediteur/${params.source}/docs/${docId}`);
-
-  const responseJson = fileId ? await response.text() : await response.json();
-
-  const data = fileId ? responseJson : responseJson.content;
-
-  if (!response) {
-    throw new Response("", {
-      status: 404,
-      statusText: "Not Found",
+/** Load a blog post content */
+export async function loader({ params }: ActionFunctionArgs) {
+  const { blogId, postId } = params;
+  const http = odeServices.http();
+  const loaded = await http.get<Post>(
+    `/blog/post/${blogId}/${postId}?state=PUBLISHED`,
+  );
+  if (http.isResponseError()) {
+    notifyError({
+      code: ERROR_CODE.TRANSPORT_ERROR,
+      text: http.latestResponse.statusText,
     });
+    return null;
   }
-
-  return data;
+  return loaded;
 }
 
 export default () => {
-  const data = useLoaderData() as string;
+  const post = useLoaderData() as Post | null;
   const { theme } = useOdeTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const link = document.getElementById("theme") as HTMLAnchorElement;
-    link.href = `${theme?.themeUrl}theme.css`;
+    if (link) link.href = `${theme?.themeUrl}theme.css`;
   }, [theme?.themeUrl]);
 
   const style = {
@@ -47,7 +46,11 @@ export default () => {
     <div
       style={style}
       contentEditable={false}
-      dangerouslySetInnerHTML={{ __html: data }}
+      dangerouslySetInnerHTML={{
+        __html:
+          post?.content ??
+          t("<p>I am sorry Dave, I am afraid I cannot do that.</p>"),
+      }}
     />
   );
 };
