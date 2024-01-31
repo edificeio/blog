@@ -1,26 +1,25 @@
+import { create } from "zustand";
+
+import { Blog } from "~/store/models/blog";
+
 /* SAMPLE STORE */
 
-/* export interface State {
-  count: number;
+interface State {
+  blog: Blog | null;
   updaters: {
-    setCount: () => void;
+    setBlog: (blog?: Blog) => void;
   };
-} */
-/* export const useStoreContext = create<State>()((set, get) => ({
-  count: 0,
+}
+
+export const useStoreContext = create<State>()((set) => ({
+  blog: null,
   updaters: {
-    setCount: () => set((state) => ({ count: state.count + 1 })),
+    setBlog: (blog) => set({ blog }),
   },
-})); */
+}));
 
-/* Export a specific state with a custom hook */
-// export const useCount = () => useStoreContext((state) => state.count);
-
-/* Access your state  */
-// const count = useCount();
+export const useBlog = () => useStoreContext((state) => state.blog);
 
 /* Export updaters */
-// export const useStoreUpdaters = () => useStoreContext((state) => state.updaters);
-
-/* Access updaters with destructuring */
-// const { setCount } = useStoreUpdaters();
+export const useStoreUpdaters = () =>
+  useStoreContext((state) => state.updaters);

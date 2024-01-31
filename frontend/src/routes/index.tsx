@@ -16,6 +16,26 @@ const routes = [
       },
       */
       // TODO list et view
+      // View is the page containing the blog view with all information about the blog and a list of posts
+      {
+        path: "view/:blodId",
+        async lazy() {
+          const { BlogView } = await import("~/app/BlogView");
+          return {
+            Component: BlogView,
+          };
+        },
+      },
+      // Post is the page containing a spécific post from a blog
+      {
+        path: "/view/:blodId/post/:postId",
+        async lazy() {
+          const { PostView } = await import("~/app/PostView");
+          return {
+            Component: PostView,
+          };
+        },
+      },
     ],
   },
   {
