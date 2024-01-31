@@ -1,25 +1,19 @@
-/*
 import { useQuery } from "@tanstack/react-query";
-import { odeServices } from "edifice-ts-client";
+import { ID, odeServices } from "edifice-ts-client";
+
 //FIXME bouge ailleurs
 type BlogModel = {
-  _id: string;
+  _id: ID;
   title: string;
 };
-*/
+
 /**
  * useBlogId query
  * @returns blog data
  */
-/*
-export const useBlogId = (id: string) => {
-  return useQuery<string, Error, BlogModel,[string,string]>(
-    {
-      queryKey: ["blog",id],
-      queryFn: () =>
-        odeServices.http().get<BlogModel>(`/blog/${id}`),
-    },
-    { _id: "toc", title: "tic" },
-  );
+export const useBlogId = (id: ID) => {
+  return useQuery({
+    queryKey: ["blog", id],
+    queryFn: async () => await odeServices.http().get<BlogModel>(`/blog/${id}`),
+  });
 };
-*/
