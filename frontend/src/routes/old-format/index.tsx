@@ -1,31 +1,29 @@
 import { useEffect } from "react";
 
 import { useOdeTheme } from "@edifice-ui/react";
-import { ERROR_CODE, odeServices } from "edifice-ts-client";
+import { QueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { LoaderFunctionArgs, useLoaderData } from "react-router-dom";
 
 import { Post } from "~/models/post";
-import { notifyError } from "~/utils/BlogEvent";
+import { postQuery } from "~/services/queries";
 
 /** Load a blog post content */
-export async function loader({ params }: LoaderFunctionArgs) {
-  const { blogId, postId } = params;
-  const http = odeServices.http();
-  const loaded = await http.get<Post>(
-    `/blog/post/${blogId}/${postId}?state=PUBLISHED`,
-  );
-  if (http.isResponseError()) {
-    notifyError({
-      code: ERROR_CODE.TRANSPORT_ERROR,
-      text: http.latestResponse.statusText,
-    });
-    return null;
-  }
-  return loaded;
-}
+export const loader =
+  (queryClient: QueryClient) =>
+  async ({ params }: LoaderFunctionArgs) => {
+    const { blogId, postId } = params;
+    if (blogId && postId) {
+      const query = postQuery(blogId, postId);
+      return (
+        queryClient.getQueryData(query.queryKey) ??
+        (await queryClient.fetchQuery(query))
+      );
+    }
+    return Promise.resolve(null);
+  };
 
-export default () => {
+export const Component = () => {
   const post = useLoaderData() as Post | null;
   const { theme } = useOdeTheme();
   const { t } = useTranslation();

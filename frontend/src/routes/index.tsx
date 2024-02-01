@@ -43,9 +43,9 @@ const routes = (queryClient: QueryClient) => [
   {
     path: "/oldformat/:blogId/:postId",
     async lazy() {
-      const { default: Component, loader } = await import("./old-format");
+      const { Component, loader } = await import("./old-format");
       return {
-        loader,
+        loader: loader(queryClient),
         Component,
       };
     },

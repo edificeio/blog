@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { odeServices } from "edifice-ts-client";
 
-import { Blog } from "~/models/blog";
-import { Post } from "~/models/post";
+import { loadBlog, loadPost } from "../api";
 
-/**
- * blogQuery
- * @returns blog query
- */
 export const blogQuery = (blogId: string) => {
   return {
     queryKey: ["blog", blogId],
-    queryFn: async () => await odeServices.http().get<Blog>(`/blog/${blogId}`),
+    queryFn: () => loadBlog(blogId),
+  };
+};
+
+export const postQuery = (blogId: string, postId: string) => {
+  return {
+    queryKey: ["post", postId],
+    queryFn: () => loadPost(blogId, postId),
   };
 };
 
@@ -33,13 +34,7 @@ export const useBlog = (blogId: string) => {
  * @returns post data
  */
 export const usePost = (blogId: string, postId: string) => {
-  const query = useQuery({
-    queryKey: ["post", postId],
-    queryFn: async () =>
-      await odeServices
-        .http()
-        .get<Post>(`/blog/post/${blogId}/${postId}?state=PUBLISHED/`),
-  });
+  const query = useQuery(postQuery(blogId, postId));
 
   return {
     post: query.data,
