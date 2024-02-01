@@ -1,9 +1,12 @@
 import { Image } from "@edifice-ui/react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
-import { useBlog } from "~/store";
+import { blogQuery } from "~/services/queries";
 
 const BlogContent = () => {
-  const blog = useBlog();
+  const params = useParams();
+  const { data: blog } = useQuery(blogQuery(params.blogId as string));
 
   // TODO load default image if no thumbnail
   if (!blog) return <div>Default image here</div>;
