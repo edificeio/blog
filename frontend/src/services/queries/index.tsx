@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { odeServices } from "edifice-ts-client";
 
-import { Blog } from "~/store/models/blog";
-import { Post } from "~/store/models/post";
+import { Blog } from "~/models/blog";
+import { Post } from "~/models/post";
 
 /**
  * blogQuery

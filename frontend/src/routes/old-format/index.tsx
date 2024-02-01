@@ -3,13 +3,13 @@ import { useEffect } from "react";
 import { useOdeTheme } from "@edifice-ui/react";
 import { ERROR_CODE, odeServices } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
-import { ActionFunctionArgs, useLoaderData } from "react-router-dom";
+import { LoaderFunctionArgs, useLoaderData } from "react-router-dom";
 
-import { Post } from "~/store/models/post";
+import { Post } from "~/models/post";
 import { notifyError } from "~/utils/BlogEvent";
 
 /** Load a blog post content */
-export async function loader({ params }: ActionFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
   const { blogId, postId } = params;
   const http = odeServices.http();
   const loaded = await http.get<Post>(
