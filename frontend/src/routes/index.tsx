@@ -1,6 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
+import { Explorer } from "ode-explorer/lib";
 import { createBrowserRouter } from "react-router-dom";
 
+import { explorerConfig } from "~/config/config";
 import Root from "~/routes/root";
 
 const routes = (queryClient: QueryClient) => [
@@ -8,14 +10,12 @@ const routes = (queryClient: QueryClient) => [
     path: "/",
     element: <Root />,
     children: [
-      /*FIXME
       {
         index: true,
-        element: <Explorer />,
-        //FIXME errorElement: <ErrorPage />,
+        // TODO remove cast as any when ode-explorer is fixed
+        element: <Explorer config={explorerConfig as any} />,
       },
-      */
-      // TODO list et view
+
       // View is the page containing the blog view with all information about the blog and a list of posts
       {
         path: "id/:blogId",
@@ -27,6 +27,7 @@ const routes = (queryClient: QueryClient) => [
           };
         },
       },
+      // TODO postLoader
       // Post is the page containing a spécific post from a blog
       {
         path: "/id/:blogId/post/:postId",

@@ -11,6 +11,7 @@ import { ERROR_CODE } from "edifice-ts-client";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 
+import "./i18n";
 import { router } from "./routes";
 import "./index.css";
 
