@@ -5,14 +5,22 @@ import { Blog } from "~/store/models/blog";
 import { Post } from "~/store/models/post";
 
 /**
+ * blogQuery
+ * @returns blog query
+ */
+export const blogQuery = (blogId: string) => {
+  return {
+    queryKey: ["blog", blogId],
+    queryFn: async () => await odeServices.http().get<Blog>(`/blog/${blogId}`),
+  };
+};
+
+/**
  * useBlog query
  * @returns blog data
  */
-export const useBlog = (id: string) => {
-  const query = useQuery({
-    queryKey: ["blog", id],
-    queryFn: async () => await odeServices.http().get<Blog>(`/blog/${id}`),
-  });
+export const useBlog = (blogId: string) => {
+  const query = useQuery(blogQuery(blogId));
 
   return {
     blog: query.data,
