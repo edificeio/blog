@@ -72,7 +72,7 @@ export const BlogFilter = () => {
     },
     {
       type: "button",
-      name: "published",
+      name: "submitted",
       props: {
         className: clsx({
           "bg-primary-200 selected":
@@ -91,7 +91,7 @@ export const BlogFilter = () => {
     },
     {
       type: "button",
-      name: "Brouillons",
+      name: "draft",
       props: {
         className: clsx({
           "bg-primary-200 selected": localPostsFilters.states.includes("DRAFT"),
