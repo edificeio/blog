@@ -37,7 +37,7 @@ export const SummaryList = ({ list, onClick }: SummaryListProps) => {
 
   return (
     <div className="pt-8">
-      {list.map((item /*, index*/) => (
+      {list.map((item) => (
         <div
           className="pb-8 d-flex summary-list-item"
           key={item.id}
