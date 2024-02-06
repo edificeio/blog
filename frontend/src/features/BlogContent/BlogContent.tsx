@@ -1,17 +1,16 @@
 import { AppIcon, Image, useOdeClient } from "@edifice-ui/react";
 
-import BlogHeader from "../BlogHeader/BlogHeader";
+import { BlogFilter } from "../BlogFilter/BlogFilter";
 import { SummaryList } from "~/components/SummaryList/SummaryList";
-import { useBlog, usePostsList } from "~/services/queries";
+import { useBlog, useMetadataPostsList } from "~/services/queries";
 
 const BlogContent = () => {
   const { blog } = useBlog();
-  const { posts } = usePostsList();
+  const { posts } = useMetadataPostsList();
   const { currentApp } = useOdeClient();
 
   return (
     <>
-      <BlogHeader />
       <div className="d-flex flex-fill">
         <div className="col-3 py-16 pe-16 border-end">
           {blog?.thumbnail ? (
@@ -40,6 +39,7 @@ const BlogContent = () => {
           )}
         </div>
         <div className="col-9 py-16 ps-16">
+          <BlogFilter />
           <h1>List of posts</h1>
           {posts?.map((post) => (
             <div key={post._id} className="pb-8">
