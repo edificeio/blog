@@ -1,7 +1,5 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useOdeClient } from "@edifice-ui/react";
-
-import { dayjs } from "~/utils/dayjs";
+import { useDate } from "@edifice-ui/react";
 
 // TODO Move to edifice-ui (don't forget css) css
 
@@ -24,11 +22,10 @@ export type SummaryListObject = {
 };
 
 export const SummaryList = ({ list, onClick }: SummaryListProps) => {
-  const { currentLanguage } = useOdeClient();
+  const { formatDate } = useDate();
+
   const displayDate = (date: string) => {
-    return dayjs(date)
-      .locale(currentLanguage as string)
-      .format("D MMM YYYY");
+    return formatDate(date, "D MMMM YYYY");
   };
 
   const handleOnClick = (item: SummaryListObject) => {

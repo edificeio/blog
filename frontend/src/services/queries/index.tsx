@@ -26,14 +26,13 @@ export const postQuery = (blogId: string, postId: string) => {
   };
 };
 
-export const postsListQueryKey = "postList";
-export const postsListQuery = (
+export const metadataPostsListQuery = (
   blogId: string,
   search?: string,
   states?: PostState[],
 ) => {
   return {
-    queryKey: [postsListQueryKey, { blogId, search, states }],
+    queryKey: ["postList", { blogId, search, states }],
     queryFn: ({ pageParam = 0 }) =>
       loadPostsList(blogId, pageParam, search, states),
     initialPageParam: 0,
@@ -104,7 +103,7 @@ export const usePost = (blogId: string, postId: string) => {
 };
 
 /**
- * usePostsList query
+ * useMetadataPostsList query
  * @param blogId the blog id string
  * @returns list of posts metadata
  */
@@ -119,7 +118,9 @@ export const useMetadataPostsList = (blogId?: string) => {
     blogId = params.blogId;
   }
 
-  const query = useInfiniteQuery(postsListQuery(blogId!, search, states));
+  const query = useInfiniteQuery(
+    metadataPostsListQuery(blogId!, search, states),
+  );
 
   return {
     posts: query.data?.pages.flatMap((page) => page) as Post[],

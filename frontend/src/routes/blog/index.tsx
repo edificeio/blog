@@ -9,7 +9,7 @@ import { BlogHeader } from "~/features/BlogHeader/BlogHeader";
 import {
   blogCounterQuery,
   blogQuery,
-  postsListQuery,
+  metadataPostsListQuery,
   useBlog,
   useMetadataPostsList,
 } from "~/services/queries";
@@ -18,7 +18,7 @@ export const blogLoader =
   (queryClient: QueryClient) =>
   async ({ params }: LoaderFunctionArgs) => {
     const queryBlog = blogQuery(params.blogId as string);
-    const queryPostsList = postsListQuery(params.blogId as string);
+    const queryPostsList = metadataPostsListQuery(params.blogId as string);
     const queryBlogCounter = blogCounterQuery(params.blogId as string);
 
     const blog = await queryClient.fetchQuery(queryBlog);
