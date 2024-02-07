@@ -39,8 +39,8 @@
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
-      "pnpm run format",
-      "pnpm run fix"
+      "pnpm run fix",
+      "pnpm run format"
     ]
   },
   "dependencies": {

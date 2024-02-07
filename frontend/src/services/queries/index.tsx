@@ -1,12 +1,21 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
-import { loadBlog, loadPost, loadPostsList } from "../api";
-import { Post } from "~/models/post";
+import { loadBlog, loadBlogCounter, loadPost, loadPostsList } from "../api";
+import { Post, PostState } from "~/models/post";
+import { usePostsFilters } from "~/store";
 
 export const blogQuery = (blogId: string) => {
   return {
     queryKey: ["blog", blogId],
     queryFn: () => loadBlog(blogId),
+  };
+};
+
+export const blogCounterQuery = (blogId: string) => {
+  return {
+    queryKey: ["blog", "counter", blogId],
+    queryFn: () => loadBlogCounter(blogId),
   };
 };
 
@@ -17,12 +26,15 @@ export const postQuery = (blogId: string, postId: string) => {
   };
 };
 
-export const postsListQuery = (blogId: string) => {
+export const metadataPostsListQuery = (
+  blogId: string,
+  search?: string,
+  states?: PostState[],
+) => {
   return {
-    queryKey: ["postList", blogId],
-    queryFn: ({ pageParam = 0 }) => {
-      return loadPostsList(blogId, pageParam);
-    },
+    queryKey: ["postList", { blogId, search, states }],
+    queryFn: ({ pageParam = 0 }) =>
+      loadPostsList(blogId, pageParam, search, states),
     initialPageParam: 0,
     getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
       if (lastPage.length === 0) {
@@ -35,6 +47,7 @@ export const postsListQuery = (blogId: string) => {
 
 /**
  * useBlog query
+ * @param blogId the blog id string
  * @returns blog data
  */
 export const useBlog = (blogId: string) => {
@@ -47,7 +60,31 @@ export const useBlog = (blogId: string) => {
 };
 
 /**
+ * useBlogCounter query
+ * @param blogId the blog id string
+ * @returns counters of posts by state for on specific blogId
+ */
+export const useBlogCounter = (blogId?: string) => {
+  const params = useParams<{ blogId: string }>();
+  /* blogId should not be optional */
+  if (!blogId) {
+    if (!params.blogId) {
+      console.error("blogId is not defined");
+    }
+    blogId = params.blogId;
+  }
+  const query = useQuery(blogCounterQuery(blogId!));
+
+  return {
+    counters: query.data,
+    query,
+  };
+};
+
+/**
  * usePost query
+ * @param blogId the blog id string
+ * @param postId the post id string
  * @returns post data
  */
 export const usePost = (blogId: string, postId: string) => {
@@ -60,42 +97,22 @@ export const usePost = (blogId: string, postId: string) => {
 };
 
 /**
- * usePostsList query
+ * useMetadataPostsList query
+ * @param blogId the blog id string
  * @returns list of posts metadata
  */
+export const useMetadataPostsList = (blogId: string) => {
+  const { states, search } = usePostsFilters();
 
-/* Pour rester cohérent, le hook devrait s'appeler usePosts ou alors faut renvoyer postsList mais plus court et explicite c'est = posts */
-export const usePostsList = (blogId: string) => {
-  const query = useInfiniteQuery(postsListQuery(blogId!));
+  const query = useInfiniteQuery(
+    metadataPostsListQuery(blogId, search, states),
+  );
 
+  /* you should use the `select` with infiniteQuery! to get the data you want from Posts
+  X = query.data?.pages.flatMap((page) => page) as Post[]
+   */
   return {
     posts: query.data?.pages.flatMap((page) => page) as Post[],
     query,
   };
 };
-
-// /**
-//  * usePostsList query
-//  * @returns list of posts metadata
-//  */
-// export function useAllPostsList(blogId?: string) {
-//   const params = useParams<{ blogId: string }>();
-//   if (!blogId) {
-//     blogId = params.blogId;
-//   }
-//   const page = 0;
-//   const { setPosts } = useStoreUpdaters();
-//   const posts = usePosts();
-//   let query = usePostsList(blogId!, 0);
-//   if (query.posts?.length && query?.posts?.length > 0) {
-//     setPosts([...posts, ...query.posts]);
-//   }
-
-//   useEffect(() => {
-//     query = usePostsList(blogId!, 0);
-//     if (query.posts?.length && query?.posts?.length > 0) {
-//       setPosts([...posts, ...query.posts]);
-//     }
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [posts]);
-// }

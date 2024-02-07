@@ -3,22 +3,21 @@ import { QueryClient } from "@tanstack/react-query";
 import { LoaderFunctionArgs, useParams } from "react-router-dom";
 
 import { SummaryList } from "~/components/SummaryList/SummaryList";
-import BlogHeader from "~/features/BlogHeader/BlogHeader";
+import { BlogHeader } from "~/features/BlogHeader/BlogHeader";
 import {
+  blogCounterQuery,
   blogQuery,
-  postsListQuery,
+  metadataPostsListQuery,
   useBlog,
-  usePostsList,
+  useMetadataPostsList,
 } from "~/services/queries";
 
 export const blogLoader =
   (queryClient: QueryClient) =>
   async ({ params }: LoaderFunctionArgs) => {
     const queryBlog = blogQuery(params.blogId as string);
-    /* TODO = maybe pass "page" as a queryParam and use https://reactrouter.com/en/main/hooks/use-search-params */
-    /* https://blog.logrocket.com/use-state-url-persist-state-usesearchparams/ */
-    /* this way, page is always 0! */
-    const queryPostsList = postsListQuery(params.blogId as string);
+    const queryPostsList = metadataPostsListQuery(params.blogId as string);
+    const queryBlogCounter = blogCounterQuery(params.blogId as string);
 
     const blog =
       queryClient.getQueryData(queryBlog.queryKey) ??
@@ -26,8 +25,11 @@ export const blogLoader =
     const posts =
       queryClient.getQueryData(queryPostsList.queryKey) ??
       (await queryClient.fetchInfiniteQuery(queryPostsList));
+    const blogCounter =
+      queryClient.getQueryData(queryBlogCounter.queryKey) ??
+      (await queryClient.fetchQuery(queryBlogCounter));
 
-    return { blog, posts };
+    return { blog, posts, blogCounter };
   };
 
 export function Blog() {
@@ -40,7 +42,7 @@ export function Blog() {
   const {
     posts,
     query: { isLoading /* fetchNextPage */ },
-  } = usePostsList(params.blogId as string);
+  } = useMetadataPostsList(params.blogId as string);
 
   /* const handleNextPage = useCallback(() => {
     fetchNextPage();
