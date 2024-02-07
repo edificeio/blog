@@ -1,5 +1,4 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
 
 import { loadBlog, loadPost, loadPostsList } from "../api";
 import { Post } from "~/models/post";
@@ -18,10 +17,12 @@ export const postQuery = (blogId: string, postId: string) => {
   };
 };
 
-export const postsListQuery = (blogId: string, page: number) => {
+export const postsListQuery = (blogId: string) => {
   return {
     queryKey: ["postList", blogId],
-    queryFn: () => loadPostsList(blogId, page),
+    queryFn: ({ pageParam = 0 }) => {
+      return loadPostsList(blogId, pageParam);
+    },
     initialPageParam: 0,
     getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
       if (lastPage.length === 0) {
@@ -36,15 +37,8 @@ export const postsListQuery = (blogId: string, page: number) => {
  * useBlog query
  * @returns blog data
  */
-export const useBlog = (blogId?: string) => {
-  const params = useParams<{ blogId: string }>();
-  if (!blogId) {
-    if (!params.blogId) {
-      console.error("blogId is not defined");
-    }
-    blogId = params.blogId;
-  }
-  const query = useQuery(blogQuery(blogId!));
+export const useBlog = (blogId: string) => {
+  const query = useQuery(blogQuery(blogId as string));
 
   return {
     blog: query.data,
@@ -69,15 +63,10 @@ export const usePost = (blogId: string, postId: string) => {
  * usePostsList query
  * @returns list of posts metadata
  */
-export const usePostsList = (blogId?: string, page?: number) => {
-  const params = useParams<{ blogId: string }>();
-  if (!blogId) {
-    if (!params.blogId) {
-      console.error("blogId is not defined");
-    }
-    blogId = params.blogId;
-  }
-  const query = useInfiniteQuery(postsListQuery(blogId!, page || 0));
+
+/* Pour rester cohérent, le hook devrait s'appeler usePosts ou alors faut renvoyer postsList mais plus court et explicite c'est = posts */
+export const usePostsList = (blogId: string) => {
+  const query = useInfiniteQuery(postsListQuery(blogId!));
 
   return {
     posts: query.data?.pages.flatMap((page) => page) as Post[],

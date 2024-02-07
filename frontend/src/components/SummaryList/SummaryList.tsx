@@ -15,6 +15,8 @@ export type SummaryListObject = {
 
 export const SummaryList = ({ list }: SummaryListProps) => {
   const { currentLanguage } = useOdeClient();
+
+  /* pensez à utiliser le hook useDate */
   const displayDate = (date: string) => {
     return dayjs(date)
       .locale(currentLanguage as string)
