@@ -47,7 +47,7 @@ export const BlogFilter = () => {
   };
 
   useEffect(() => {
-    setPostsFilter(localPostsFilters);
+    setPostsFilter(debouncePostsFilters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncePostsFilters]);
 
