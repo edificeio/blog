@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { IAction, IUserInfo } from "edifice-ts-client";
+import { IAction } from "edifice-ts-client";
 import { useParams } from "react-router-dom";
 
 import {
@@ -7,10 +7,8 @@ import {
   loadBlogCounter,
   loadPost,
   loadPostsList,
-  loadBlogNoError,
   sessionHasWorkflowRights,
 } from "../api";
-import { Blog } from "~/models/blog";
 import { Post, PostState } from "~/models/post";
 import { usePostsFilters } from "~/store";
 import { IActionDefinition } from "~/utils/types";
@@ -68,61 +66,6 @@ export const availableActionsQuery = (actions: IActionDefinition[]) => {
       })) as IAction[];
     },
     staleTime: Infinity,
-  };
-};
-
-type SharedRoles = { read: boolean; contrib: boolean; manager: boolean };
-type SharedRight = {
-  "org-entcore-blog-controllers-PostController|list": boolean;
-  "org-entcore-blog-controllers-PostController|submit": boolean;
-  "org-entcore-blog-controllers-BlogController|shareResource": boolean;
-};
-
-/** Query resource rights for the current user on a blog. */
-export const blogRightsQuery = (blogId: string, session: IUserInfo) => {
-  return {
-    queryKey: ["blog", blogId], // KEEP IN SYNC WITH blogQuery() ABOVE
-    queryFn: () => loadBlogNoError(blogId),
-    select: ({ shared, author }: Blog) => {
-      const { userId, groupsIds } = session;
-      // Look for granted rights in the "shared" array
-      const { read, contrib, manager } = (shared as any).reduce(
-        (
-          previous: SharedRoles,
-          current: {
-            userId: string;
-            groupId: string;
-          } & SharedRight,
-        ) => {
-          if (
-            current &&
-            (current.userId === userId ||
-              groupsIds.indexOf(current.groupId) >= 0)
-          ) {
-            previous.read ||=
-              current["org-entcore-blog-controllers-PostController|list"];
-            previous.contrib ||=
-              current["org-entcore-blog-controllers-PostController|submit"];
-            previous.manager ||=
-              current[
-                "org-entcore-blog-controllers-BlogController|shareResource"
-              ];
-          }
-          return previous;
-        },
-        {
-          read: false,
-          contrib: false,
-          manager: false,
-        },
-      ) as SharedRoles;
-      return {
-        creator: author.userId === userId,
-        read,
-        contrib,
-        manager,
-      };
-    },
   };
 };
 

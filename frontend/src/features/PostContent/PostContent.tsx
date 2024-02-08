@@ -16,18 +16,17 @@ import { useTranslation } from "react-i18next";
 
 import { usePostActions } from "../ActionBar/usePostActions";
 import { postContentActions } from "~/config/postContentActions";
-import { Blog } from "~/models/blog";
 import { Post } from "~/models/post";
 
-type PostContentProps = { blog: Blog; post: Post };
+type PostContentProps = { post: Post };
 
-export const PostContent = ({ blog, post }: PostContentProps) => {
+export const PostContent = ({ post }: PostContentProps) => {
   const editorRef = useRef<EditorRef>(null);
   const [content /*, setContent*/] = useState(post?.content ?? "");
   const [mode /*, setMode*/] = useState<"read" | "edit">("read");
   const { t } = useTranslation();
 
-  const { actions } = usePostActions(postContentActions, blog, post);
+  const { actions } = usePostActions(postContentActions, post);
   const readOnly =
     actions && actions.findIndex((action) => action.id === ACTION.OPEN) < 0;
 

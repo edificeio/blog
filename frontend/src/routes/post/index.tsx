@@ -5,12 +5,7 @@ import { postContentActions } from "~/config/postContentActions";
 import { PostContent } from "~/features/PostContent/PostContent";
 import { PostHeader } from "~/features/PostHeader/PostHeader";
 import { Post } from "~/models/post";
-import {
-  availableActionsQuery,
-  postQuery,
-  useBlog,
-  usePost,
-} from "~/services/queries";
+import { availableActionsQuery, postQuery, usePost } from "~/services/queries";
 
 /** Load a blog post content */
 export const loader =
@@ -33,17 +28,16 @@ export const loader =
   };
 
 export function Component() {
-  const { blog } = useBlog();
   const { post } = usePost();
 
-  if (!blog || !post) {
+  if (!post) {
     return <></>;
   }
 
   return (
     <>
       <PostHeader post={post}></PostHeader>
-      <PostContent blog={blog} post={post}></PostContent>
+      <PostContent post={post}></PostContent>
     </>
   );
 }
