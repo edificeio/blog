@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { loadBlog, loadBlogCounter, loadPost, loadPostsList } from "../api";
 import { Post, PostState } from "~/models/post";
-import { usePostsFilters } from "~/store";
+import { usePostPageSize, usePostsFilters } from "~/store";
 
 export const blogQuery = (blogId: string) => {
   return {
@@ -26,22 +26,34 @@ export const postQuery = (blogId: string, postId: string) => {
   };
 };
 
-export const metadataPostsListQuery = (
+export const postsListQuery = (
   blogId: string,
+  pageSize?: number,
   search?: string,
   states?: PostState[],
 ) => {
+  const queryKey: any = { blogId };
+  if (search) {
+    queryKey.search = search;
+  }
+  if (states && states.length > 0) {
+    queryKey.states = states;
+  }
   return {
-    queryKey: ["postList", { blogId, search, states }],
+    queryKey: ["postList", queryKey],
     queryFn: ({ pageParam = 0 }) =>
       loadPostsList(blogId, pageParam, search, states),
     initialPageParam: 0,
     getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
-      if (lastPage.length === 0) {
+      if (
+        (pageSize && lastPage.length < pageSize) ||
+        (!pageSize && lastPage.length === 0)
+      ) {
         return undefined;
       }
       return lastPageParam + 1;
     },
+    keepPreviousData: true,
   };
 };
 
@@ -107,9 +119,10 @@ export const usePost = (blogId: string, postId: string) => {
  * @param blogId the blog id string
  * @returns list of posts metadata
  */
-export const useMetadataPostsList = (blogId?: string) => {
+export const usePostsList = (blogId?: string) => {
   const params = useParams<{ blogId: string }>();
   const { states, search } = usePostsFilters();
+  const pageSize = usePostPageSize();
 
   if (!blogId) {
     if (!params.blogId) {
@@ -119,7 +132,7 @@ export const useMetadataPostsList = (blogId?: string) => {
   }
 
   const query = useInfiniteQuery(
-    metadataPostsListQuery(blogId!, search, states),
+    postsListQuery(blogId!, pageSize, search, states),
   );
 
   return {
