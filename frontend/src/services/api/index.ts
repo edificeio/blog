@@ -18,7 +18,11 @@ async function notifyOnHttpError<T>(promise: Promise<T>) {
 }
 
 export function loadBlog(id: string) {
-  return notifyOnHttpError(odeServices.http().get<Blog>(`/blog/${id}`));
+  return notifyOnHttpError(loadBlogNoError(id));
+}
+
+export function loadBlogNoError(id: string) {
+  return odeServices.http().get<Blog>(`/blog/${id}`);
 }
 
 export function loadBlogCounter(id: string) {
@@ -50,3 +54,12 @@ export function loadPostsList(
   }
   return notifyOnHttpError(odeServices.http().get<Post[]>(path));
 }
+
+/**
+ * sessionHasWorkflowRights API
+ * @param actionRights
+ * @returns check if user has rights
+ */
+export const sessionHasWorkflowRights = async (actionRights: string[]) => {
+  return await odeServices.rights().sessionHasWorkflowRights(actionRights);
+};
