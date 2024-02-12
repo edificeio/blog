@@ -10,7 +10,7 @@ import {
   Print,
   TextToSpeech,
 } from "@edifice-ui/icons";
-import { Button, Dropdown, IconButton } from "@edifice-ui/react";
+import { Button, Dropdown, IconButton, Label } from "@edifice-ui/react";
 import { ACTION } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
@@ -46,80 +46,86 @@ export const PostContent = ({ post }: PostContentProps) => {
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center">
-        <Button
-          type="button"
-          color="tertiary"
-          variant="ghost"
-          leftIcon={<ArrowLeft />}
-        >
-          {t("back")}
-        </Button>
-        <div className="d-flex m-16 gap-12">
-          {readOnly ? (
-            <>
-              <IconButton
-                icon={<Print />}
-                color="primary"
-                variant="outline"
-                aria-label={t("print")}
-                onClick={handlePrintClick}
-              />
-              <IconButton
-                icon={<TextToSpeech />}
-                color="primary"
-                variant="outline"
-                className={
-                  editorRef.current?.isSpeeching() ? "bg-secondary" : ""
-                }
-                aria-label={t("tiptap.toolbar.tts")}
-                onClick={handleTtsClick}
-              />
-            </>
-          ) : (
-            <>
-              <Button leftIcon={<Edit />} onClick={handleEditClick}>
-                {t("edit")}
-              </Button>
-              <Dropdown>
-                <Dropdown.Trigger icon={<Options />}></Dropdown.Trigger>
-                <Dropdown.Menu>
-                  {canPublish && (
+      {mode === "read" ? (
+        <div className="d-flex justify-content-between align-items-center">
+          <Button
+            type="button"
+            color="tertiary"
+            variant="ghost"
+            leftIcon={<ArrowLeft />}
+          >
+            {t("back")}
+          </Button>
+          <div className="d-flex m-16 gap-12">
+            {readOnly ? (
+              <>
+                <IconButton
+                  icon={<Print />}
+                  color="primary"
+                  variant="outline"
+                  aria-label={t("print")}
+                  onClick={handlePrintClick}
+                />
+                <IconButton
+                  icon={<TextToSpeech />}
+                  color="primary"
+                  variant="outline"
+                  className={
+                    editorRef.current?.isSpeeching() ? "bg-secondary" : ""
+                  }
+                  aria-label={t("tiptap.toolbar.tts")}
+                  onClick={handleTtsClick}
+                />
+              </>
+            ) : (
+              <>
+                <Button leftIcon={<Edit />} onClick={handleEditClick}>
+                  {t("edit")}
+                </Button>
+                <Dropdown>
+                  <Dropdown.Trigger icon={<Options />}></Dropdown.Trigger>
+                  <Dropdown.Menu>
+                    {canPublish && (
+                      <Dropdown.Item
+                        type="action"
+                        onClick={handlePublishOrSubmitClick}
+                      >
+                        {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
+                      </Dropdown.Item>
+                    )}
                     <Dropdown.Item
                       type="action"
-                      onClick={handlePublishOrSubmitClick}
+                      icon={<ArrowUp />}
+                      onClick={handleMoveupClick}
                     >
-                      {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
+                      {t("goUp")}
                     </Dropdown.Item>
-                  )}
-                  <Dropdown.Item
-                    type="action"
-                    icon={<ArrowUp />}
-                    onClick={handleMoveupClick}
-                  >
-                    {t("goUp")}
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    type="action"
-                    icon={<Print />}
-                    onClick={handlePrintClick}
-                  >
-                    {t("blog.print")}
-                  </Dropdown.Item>
+                    <Dropdown.Item
+                      type="action"
+                      icon={<Print />}
+                      onClick={handlePrintClick}
+                    >
+                      {t("blog.print")}
+                    </Dropdown.Item>
 
-                  <Dropdown.Item
-                    type="action"
-                    icon={<Delete />}
-                    onClick={handleDeleteClick}
-                  >
-                    {t("blog.delete.post")}
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </>
-          )}
+                    <Dropdown.Item
+                      type="action"
+                      icon={<Delete />}
+                      onClick={handleDeleteClick}
+                    >
+                      {t("blog.delete.post")}
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <Label>{t("")}</Label>
+        </div>
+      )}
       <div className="mx-md-16">
         <Editor ref={editorRef} content={content} mode={mode}></Editor>
       </div>
