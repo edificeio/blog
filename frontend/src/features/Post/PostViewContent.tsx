@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Editor, EditorRef } from "@edifice-ui/editor";
 import {
@@ -8,41 +8,53 @@ import {
   Edit,
   Options,
   Print,
+  Save,
+  Send,
   TextToSpeech,
 } from "@edifice-ui/icons";
-import { Button, Dropdown, IconButton, Label } from "@edifice-ui/react";
-import { ACTION } from "edifice-ts-client";
+import {
+  Button,
+  Dropdown,
+  FormControl,
+  IconButton,
+  Input,
+  Label,
+} from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
-import { usePostActions } from "../ActionBar/usePostActions";
-import { postContentActions } from "~/config/postContentActions";
-import { Post } from "~/models/post";
+import { usePostContext } from "./PostProvider";
 
-type PostContentProps = { post: Post };
+export const PostViewContent = () => {
+  const { post, mustSubmit, readOnly, canPublish } = usePostContext();
 
-export const PostContent = ({ post }: PostContentProps) => {
   const editorRef = useRef<EditorRef>(null);
+  const titleRef = useRef(null);
   const [content /*, setContent*/] = useState(post?.content ?? "");
-  const [mode /*, setMode*/] = useState<"read" | "edit">("read");
+  const [mode, setMode] = useState<"read" | "edit">("read");
+  const [variant, setVariant] = useState<"ghost" | "outline">("ghost");
   const { t } = useTranslation();
 
-  // -- Get all rights the current user has on the post, without constraints on its status.
-  const { actions, mustSubmit } = usePostActions(postContentActions, post);
-
-  // UI may focus on readOnly(=true) mode, or on read / edit mode (=false)
-  const readOnly =
-    !!actions && actions.findIndex((action) => action.id === ACTION.OPEN) < 0;
-  const canPublish =
-    !!actions &&
-    actions.findIndex((action) => action.id === ACTION.PUBLISH) >= 0;
+  useEffect(() => {
+    setVariant(mode === "read" ? "ghost" : "outline");
+  }, [mode]);
 
   const handlePrintClick = () => alert("print !"); // TODO
   const handleTtsClick = () => editorRef.current?.toogleSpeechSynthetisis();
-  const handleEditClick = () => alert("edit !"); // TODO
+
+  const handleEditClick = () => {
+    setMode("edit");
+  };
   const handleDeleteClick = () => alert("delete"); // TODO
   const handlePublishOrSubmitClick = () =>
     mustSubmit ? alert("submit") : alert("publish"); // TODO
   const handleMoveupClick = () => alert("republish"); // TODO
+
+  const handleCancelClick = () => {
+    setMode("read");
+  };
+  const handleSaveClick = () => alert("save"); // TODO
+  const handleSaveThenPublishOrSubmitClick = () =>
+    mustSubmit ? alert("submit") : alert("publish"); // TODO
 
   return (
     <>
@@ -122,13 +134,52 @@ export const PostContent = ({ post }: PostContentProps) => {
           </div>
         </div>
       ) : (
-        <div>
-          <Label>{t("")}</Label>
-        </div>
+        <>
+          <FormControl id="postTitle" isRequired className="mx-md-16">
+            <Label>{t("blog.post.title-helper")}</Label>
+            <Input
+              ref={titleRef}
+              type="text"
+              size="md"
+              placeholder={t("post.title.placeholder")}
+              value={post?.title}
+            ></Input>
+          </FormControl>
+          <FormControl id="postContent" className="mt-16 mx-md-16">
+            <Label>{t("blog.post.content-helper")}</Label>
+          </FormControl>
+        </>
       )}
       <div className="mx-md-16">
-        <Editor ref={editorRef} content={content} mode={mode}></Editor>
+        <Editor
+          ref={editorRef}
+          content={content}
+          mode={mode}
+          variant={variant}
+        ></Editor>
       </div>
+      {mode === "edit" && (
+        <div className="d-flex gap-8 justify-content-end mt-16 mx-md-16">
+          <Button type="button" variant="ghost" onClick={handleCancelClick}>
+            {t("cancel")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            leftIcon={<Save />}
+            onClick={handleSaveClick}
+          >
+            {t("blog.save")}
+          </Button>
+          <Button
+            type="button"
+            leftIcon={<Send />}
+            onClick={handleSaveThenPublishOrSubmitClick}
+          >
+            {t("blog.publish")}
+          </Button>
+        </div>
+      )}
     </>
   );
 };

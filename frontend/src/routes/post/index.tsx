@@ -2,8 +2,9 @@ import { QueryClient } from "@tanstack/react-query";
 import { LoaderFunctionArgs } from "react-router-dom";
 
 import { postContentActions } from "~/config/postContentActions";
-import { PostContent } from "~/features/PostContent/PostContent";
-import { PostHeader } from "~/features/PostHeader/PostHeader";
+import { PostProvider } from "~/features/Post/PostProvider";
+import { PostViewContent } from "~/features/Post/PostViewContent";
+import { PostViewHeader } from "~/features/Post/PostViewHeader";
 import { Post } from "~/models/post";
 import { availableActionsQuery, postQuery, usePost } from "~/services/queries";
 
@@ -35,9 +36,9 @@ export function Component() {
   }
 
   return (
-    <>
-      <PostHeader post={post}></PostHeader>
-      <PostContent post={post}></PostContent>
-    </>
+    <PostProvider post={post}>
+      <PostViewHeader />
+      <PostViewContent />
+    </PostProvider>
   );
 }
