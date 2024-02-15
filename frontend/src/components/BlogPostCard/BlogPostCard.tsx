@@ -61,14 +61,14 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
       const mediaTags = contentHTML.match(getMediaTags);
       contentHTML = contentHTML.replace(getMediaTags, "");
       if (mediaTags?.length) {
-        const mediaURLs = mediaTags
-          .filter((tag) => tag.includes("img"))
-          .map((tag) => {
-            const srcMatch = getSrc.exec(tag);
-            return srcMatch?.length ? srcMatch[1] : "";
-          });
-        console.log("mediaURLs", mediaURLs.length);
-        setMediaURLs([...mediaURLs, ...mediaURLs] || []);
+        setMediaURLs(
+          mediaTags
+            .filter((tag) => tag.includes("img"))
+            .map((tag) => {
+              const srcMatch = getSrc.exec(tag);
+              return srcMatch?.length ? srcMatch[1] : "";
+            }) || [],
+        );
       }
 
       while (haveEmptyTags.test(contentHTML)) {
@@ -90,10 +90,13 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
     }
   }, [post]);
 
+  const classes = clsx("p-24", {
+    "blog-post-badge-highlight": post._id === sidebarHighlightedPost?._id,
+  });
+
   return (
     <Card
-      isSelected={post._id === sidebarHighlightedPost?._id}
-      className="p-24"
+      className={classes}
       onClick={() => {
         handleOnClick(post);
       }}
@@ -125,6 +128,7 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
               )}
             {post.state === PostState.SUBMITTED && (
               <Badge
+                className="blog-post-badge ms-8"
                 variant={{
                   type: "notification",
                   level: "warning",
@@ -135,7 +139,7 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
               </Badge>
             )}
           </h5>
-          <div className="text-gray-700 small g-md-4 d-flex flex-column flex-md-row ">
+          <div className="text-gray-700 small gap-4 d-flex flex-column flex-md-row ">
             <div>{post.author.username}</div>
             <div className="d-none d-md-block ">|</div>
             <div>{t("Envoyé le") + " " + displayDate(post.modified.$date)}</div>
@@ -152,7 +156,7 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
               variant="ghost"
             />
           </div>
-          <div className="d-flex align-items-center justify-content-center gap-8 mx-32">
+          <div className="d-flex align-items-center justify-content-center gap-24 mx-32">
             {mediaURLs.slice(0, MAX_NUMBER_MEDIA_DISPLAY).map((url, index) => (
               <div
                 className={clsx("blog-post-image", {
@@ -167,20 +171,20 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
                   className="rounded"
                   src={url}
                 />
-                {(index === 0 || index === 2) && (
-                  <div
-                    className={clsx(
-                      "position-absolute top-0 bottom-0 start-0 end-0 d-flex justify-content-center align-items-center rounded text-light bg-dark bg-opacity-50",
-                      {
-                        "d-flex d-md-none": index === 0,
-                        "d-none d-md-flex": index === 2,
-                      },
-                    )}
-                  >
-                    {" "}
-                    + {mediaURLs.length - (index + 1)} {t("images")}{" "}
-                  </div>
-                )}
+                {(index === 0 || index === 2) &&
+                  mediaURLs.length - (index + 1) > 0 && (
+                    <div
+                      className={clsx(
+                        "position-absolute top-0 bottom-0 start-0 end-0 d-flex justify-content-center align-items-center rounded text-light bg-dark bg-opacity-50",
+                        {
+                          "d-flex d-md-none": index === 0,
+                          "d-none d-md-flex": index === 2,
+                        },
+                      )}
+                    >
+                      + {mediaURLs.length - (index + 1)} {t("images")}
+                    </div>
+                  )}
               </div>
             ))}
           </div>
