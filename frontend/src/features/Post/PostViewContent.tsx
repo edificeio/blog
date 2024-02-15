@@ -23,13 +23,15 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { usePostContext } from "./PostProvider";
+import { publishPost, savePost } from "~/services/api";
 
 export const PostViewContent = () => {
-  const { post, mustSubmit, readOnly, canPublish } = usePostContext();
+  const { blogId, post, mustSubmit, readOnly, canPublish } = usePostContext();
 
   const editorRef = useRef<EditorRef>(null);
   const titleRef = useRef(null);
-  const [content /*, setContent*/] = useState(post?.content ?? "");
+  const [title, setTitle] = useState(post?.title ?? "");
+  const [content, setContent] = useState(post?.content ?? "");
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [variant, setVariant] = useState<"ghost" | "outline">("ghost");
   const { t } = useTranslation();
@@ -44,6 +46,7 @@ export const PostViewContent = () => {
   const handleEditClick = () => {
     setMode("edit");
   };
+
   const handleDeleteClick = () => alert("delete"); // TODO
   const handlePublishOrSubmitClick = () =>
     mustSubmit ? alert("submit") : alert("publish"); // TODO
@@ -51,10 +54,28 @@ export const PostViewContent = () => {
 
   const handleCancelClick = () => {
     setMode("read");
+    // Restore previous content
+    setContent(post.content);
   };
-  const handleSaveClick = () => alert("save"); // TODO
-  const handleSaveThenPublishOrSubmitClick = () =>
-    mustSubmit ? alert("submit") : alert("publish"); // TODO
+
+  const handleSaveClick = () => {
+    const contentHtml = editorRef.current?.getContent("html") as string;
+    if (!title || title.trim().length == 0 || !contentHtml) return;
+    // TODO set title+content in store
+    post.title = title;
+    post.content = contentHtml;
+    return savePost(blogId, post);
+  };
+
+  const handleSaveThenPublishOrSubmitClick = async () => {
+    //mustSubmit ? alert("submit") : alert("publish"); // TODO
+    try {
+      await handleSaveClick();
+      await publishPost(blogId, post);
+    } catch (e) {
+      // HTTP failure has already been notified to the user.
+    }
+  };
 
   return (
     <>
@@ -142,7 +163,8 @@ export const PostViewContent = () => {
               type="text"
               size="md"
               placeholder={t("post.title.placeholder")}
-              value={post?.title}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             ></Input>
           </FormControl>
           <FormControl id="postContent" className="mt-16 mx-md-16">

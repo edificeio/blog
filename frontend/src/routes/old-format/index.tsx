@@ -1,27 +1,12 @@
 import { useEffect } from "react";
 
 import { useOdeTheme } from "@edifice-ui/react";
-import { QueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { LoaderFunctionArgs, useLoaderData } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 
 import { Post } from "~/models/post";
-import { postQuery } from "~/services/queries";
 
-/** Load a blog post content */
-export const loader =
-  (queryClient: QueryClient) =>
-  async ({ params }: LoaderFunctionArgs) => {
-    const { blogId, postId } = params;
-    if (blogId && postId) {
-      const query = postQuery(blogId, postId);
-      return (
-        queryClient.getQueryData(query.queryKey) ??
-        (await queryClient.fetchQuery(query))
-      );
-    }
-    return Promise.resolve(null);
-  };
+export { loader } from "../post";
 
 export const Component = () => {
   const post = useLoaderData() as Post | null;

@@ -7,11 +7,13 @@ import { postContentActions } from "~/config/postContentActions";
 import { Post } from "~/models/post";
 
 export interface PostProps {
+  blogId: string;
   post: Post;
   children: ReactNode;
 }
 
 export interface PostContextProps {
+  blogId: string;
   post: Post;
   actions?: IAction[];
   mustSubmit: boolean;
@@ -22,11 +24,12 @@ export interface PostContextProps {
 
 export const PostContext = createContext<PostContextProps | null>(null!);
 
-export function PostProvider({ post, children }: PostProps) {
+export function PostProvider({ blogId, post, children }: PostProps) {
   // -- Get all rights the current user has on the post, without constraints on its status.
   const { actions, mustSubmit } = usePostActions(postContentActions, post);
 
   const values = {
+    blogId,
     post,
     actions,
     mustSubmit,
