@@ -5,23 +5,23 @@ import { PostsFilters } from "~/models/postFilter";
 
 interface State {
   postsFilters: PostsFilters;
-  sidebarPostSelected: Post | undefined;
+  sidebarHighlightedPost: Post | undefined;
   postPageSize: number;
   updaters: {
     setPostsFilter: (postsFilter: PostsFilters) => void;
-    setSidebarPostSelected: (sidebarPostSelected?: Post) => void;
+    setSidebarHighlightedPost: (sidebarPostSelected?: Post) => void;
     setPostPageSize: (postPageSize: number) => void;
   };
 }
 
 export const useStoreContext = create<State>()((set, get) => ({
   postsFilters: { states: [], search: "" },
-  sidebarPostSelected: undefined,
+  sidebarHighlightedPost: undefined,
   postPageSize: 0,
   updaters: {
     setPostsFilter: (postsFilters) => set({ postsFilters }),
-    setSidebarPostSelected: (sidebarPostSelected) =>
-      set({ sidebarPostSelected }),
+    setSidebarHighlightedPost: (sidebarPostSelected) =>
+      set({ sidebarHighlightedPost: sidebarPostSelected }),
     setPostPageSize: (postPageSize) => {
       if (get().postPageSize > postPageSize) {
         return;
@@ -34,8 +34,8 @@ export const useStoreContext = create<State>()((set, get) => ({
 export const usePostsFilters = () =>
   useStoreContext((state) => state.postsFilters);
 
-export const useSidebarPostSelected = () =>
-  useStoreContext((state) => state.sidebarPostSelected);
+export const useSidebarHighlightedPost = () =>
+  useStoreContext((state) => state.sidebarHighlightedPost);
 
 export const usePostPageSize = () =>
   useStoreContext((state) => state.postPageSize);

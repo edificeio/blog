@@ -9,10 +9,10 @@ const BlogSidebar = () => {
   const { blog } = useBlog();
   const { posts } = usePostsList();
   const { currentApp } = useOdeClient();
-  const { setSidebarPostSelected } = useStoreUpdaters();
+  const { setSidebarHighlightedPost } = useStoreUpdaters();
 
   const handleOnClick = (id: string) => {
-    setSidebarPostSelected(posts?.find((post) => post._id === id));
+    setSidebarHighlightedPost(posts?.find((post) => post._id === id));
   };
 
   const {
