@@ -21,6 +21,7 @@ import {
   Label,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import { usePostContext } from "./PostProvider";
 import { publishPost, savePost } from "~/services/api";
@@ -36,10 +37,13 @@ export const PostViewContent = () => {
   const [variant, setVariant] = useState<"ghost" | "outline">("ghost");
   const { t } = useTranslation();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     setVariant(mode === "read" ? "ghost" : "outline");
   }, [mode]);
 
+  const handleBackwardClick = () => navigate(-1); // TODO
   const handlePrintClick = () => alert("print !"); // TODO
   const handleTtsClick = () => editorRef.current?.toogleSpeechSynthetisis();
 
@@ -58,20 +62,23 @@ export const PostViewContent = () => {
     setContent(post.content);
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     const contentHtml = editorRef.current?.getContent("html") as string;
     if (!title || title.trim().length == 0 || !contentHtml) return;
     // TODO set title+content in store
     post.title = title;
     post.content = contentHtml;
-    return savePost(blogId, post);
+    const { state } = await savePost(blogId, post);
+    if (state) post.state = state;
+    // TODO set state in store
   };
 
   const handleSaveThenPublishOrSubmitClick = async () => {
-    //mustSubmit ? alert("submit") : alert("publish"); // TODO
+    //TODO mustSubmit ? alert("submit") : alert("publish");
     try {
       await handleSaveClick();
       await publishPost(blogId, post);
+      // TODO update state
     } catch (e) {
       // HTTP failure has already been notified to the user.
     }
@@ -86,6 +93,7 @@ export const PostViewContent = () => {
             color="tertiary"
             variant="ghost"
             leftIcon={<ArrowLeft />}
+            onClick={handleBackwardClick}
           >
             {t("back")}
           </Button>

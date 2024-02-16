@@ -51,7 +51,7 @@ export function loadPost(blogId: string, post: PostMetadata) {
 export function savePost(blogId: string, post: Post) {
   const { _id: postId, title, content } = post;
   return checkHttpError(
-    odeServices.http().putJson<Post>(`/blog/post/${blogId}/${postId}`, {
+    odeServices.http().putJson<PostMetadata>(`/blog/post/${blogId}/${postId}`, {
       title,
       content,
     }),
