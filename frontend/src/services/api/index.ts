@@ -29,6 +29,7 @@ export function loadBlogCounter(id: string) {
   );
 }
 
+/** Use to get a the state of a post */
 export async function loadPostMetadata(blogId: string, postId: string) {
   const results = await checkHttpError(
     odeServices
