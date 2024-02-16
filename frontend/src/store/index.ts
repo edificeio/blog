@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { Post } from "~/models/post";
+import { Post, PostState } from "~/models/post";
 import { PostsFilters } from "~/models/postFilter";
 
 interface State {
@@ -15,7 +15,7 @@ interface State {
 }
 
 export const useStoreContext = create<State>()((set, get) => ({
-  postsFilters: { states: [], search: "" },
+  postsFilters: { state: PostState.PUBLISHED, search: "" },
   sidebarHighlightedPost: undefined,
   postPageSize: 0,
   updaters: {

@@ -6,6 +6,7 @@ import { Avatar, Badge, Card, Image, useDate } from "@edifice-ui/react";
 import clsx from "clsx";
 import { odeServices } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions";
 import { Post, PostState } from "~/models/post";
@@ -16,25 +17,22 @@ export type BlogPostCardProps = {
    * Post to display
    */
   post: Post;
-
-  /**
-   * Action on click
-   */
-  onClick?: (post: Post) => void;
 };
 
-export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
+export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const { fromNow } = useDate();
   const { t } = useTranslation();
   const directoryService = odeServices.directory();
   const sidebarHighlightedPost = useSidebarHighlightedPost();
   const editorRef = useRef<EditorRef>(null);
   const { contrib, manager, creator } = useActionDefinitions([]);
+  const navigate = useNavigate();
 
   // Number of media to display on the preview card
   const MAX_NUMBER_MEDIA_DISPLAY = 3;
   // // Check size of screen to display the right number of media base on breakpoint
   const [summaryContent, setSummaryContent] = useState<string>("");
+  const [summaryContentPlain, setSummaryContentPlain] = useState<string>("");
   const [mediaURLs, setMediaURLs] = useState<string[]>([]);
 
   const getAvatarURL = (post: Post): string => {
@@ -46,8 +44,7 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
   };
 
   const handleOnClick = (post: Post) => {
-    console.log("handleOnClick", post);
-    onClick?.(post);
+    navigate(`./post/${post?._id}`);
   };
 
   useEffect(() => {
@@ -55,9 +52,6 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
     if (contentHTML) {
       const getMediaTags = /<(img|video|iframe|audio|embed)[^>]*>(<\/\1>)?/gim;
       const getSrc = /src=(?:"|')([^"|']*)(?:"|')/;
-      const haveEmptyTags = /<([^>|/]*)\s*[^>]*>\s*\S*(&nbsp;)*<\/\1>/gim;
-      const getSummaryTags =
-        /<([h1,h2,h3,h4,h5,p,div]+)\s*[^>]*>((?!<\/\1).)*<\/\1>/gim;
       const mediaTags = contentHTML.match(getMediaTags);
       contentHTML = contentHTML.replace(getMediaTags, "");
       if (mediaTags?.length) {
@@ -71,24 +65,21 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
         );
       }
 
-      while (haveEmptyTags.test(contentHTML)) {
-        contentHTML = contentHTML.replace(haveEmptyTags, "");
-      }
-
-      // Check if line clamp is supported by the browser else cut the content
-      if (!CSS.supports("-webkit-line-clamp: 2")) {
-        setSummaryContent(contentHTML);
-      } else {
-        // Cut with js the 2 first tag of the content
-        const summary = contentHTML.match(getSummaryTags);
-        setSummaryContent(
-          summary && summary?.length > 2
-            ? summary.slice(0, 2)?.join("") + "..."
-            : summary?.join("") || "",
-        );
-      }
+      setSummaryContent(contentHTML);
     }
   }, [post]);
+
+  useEffect(() => {
+    if (editorRef.current?.getContent("plain")) {
+      const plainText =
+        editorRef.current
+          ?.getContent("plain")
+          ?.replace(/\u200B/g, "")
+          ?.replace(/((&nbsp;)|\s)((&nbsp;)|\s)+/g, " ") || "";
+      setSummaryContentPlain(plainText);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorRef.current?.getContent("plain")]);
 
   const classes = clsx("p-24", {
     "blog-post-badge-highlight": post._id === sidebarHighlightedPost?._id,
@@ -148,13 +139,16 @@ export const BlogPostCard = ({ post, onClick }: BlogPostCardProps) => {
       </div>
       <Card.Body space="0">
         <div className="d-flex flex-fill flex-column gap-16 py-16">
-          <div className="flex-fill blog-post-preview">
+          <div className="d-none">
             <Editor
               ref={editorRef}
               content={summaryContent}
               mode="read"
               variant="ghost"
             />
+          </div>
+          <div className="flex-fill blog-post-preview">
+            {summaryContentPlain}
           </div>
           <div className="d-flex align-items-center justify-content-center gap-24 mx-32">
             {mediaURLs.slice(0, MAX_NUMBER_MEDIA_DISPLAY).map((url, index) => (

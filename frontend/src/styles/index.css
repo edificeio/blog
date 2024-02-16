@@ -70,7 +70,8 @@ main {
 }
 
 .blog-post-badge {
-  font-family: var(--edifice-badge-font-family) !important;
+  font-family: var(--edifice-body-font-family) !important;
+  text-transform: none;
 }
 
 .blog-post-image {
