@@ -48,6 +48,17 @@ export function loadPost(blogId: string, post: PostMetadata) {
   );
 }
 
+export function loadOriginalPost(blogId: string, post: PostMetadata) {
+  const { _id: postId, state } = post;
+  return checkHttpError(
+    odeServices
+      .http()
+      .get<Post>(
+        `/blog/post/${blogId}/${postId}?state=${state}&originalFormat=true`,
+      ),
+  );
+}
+
 export function savePost(blogId: string, post: Post) {
   const { _id: postId, title, content } = post;
   return checkHttpError(

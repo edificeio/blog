@@ -1,12 +1,28 @@
 import { useEffect } from "react";
 
 import { useOdeTheme } from "@edifice-ui/react";
+import { QueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useLoaderData } from "react-router-dom";
+import { LoaderFunctionArgs, useLoaderData } from "react-router-dom";
 
 import { Post } from "~/models/post";
+import { loadPostMetadata } from "~/services/api";
+import { originalPostQuery } from "~/services/queries";
 
-export { loader } from "../post";
+/** Load a blog post OLD-FORMAT content */
+export const loader =
+  (queryClient: QueryClient) =>
+  async ({ params }: LoaderFunctionArgs) => {
+    const { blogId, postId } = params;
+    if (blogId && postId) {
+      const postMetadata = await loadPostMetadata(blogId, postId);
+      const query = originalPostQuery(blogId, postMetadata);
+      const post = await queryClient.fetchQuery(query);
+      return post;
+    }
+
+    return null;
+  };
 
 export const Component = () => {
   const post = useLoaderData() as Post | null;

@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import {
   loadBlog,
   loadBlogCounter,
+  loadOriginalPost,
   loadPost,
   loadPostsList,
   sessionHasWorkflowRights,
@@ -33,6 +34,13 @@ export const postQuery = (blogId: string, post: PostMetadata) => {
   return {
     queryKey: ["post", post._id, post.state],
     queryFn: () => loadPost(blogId, post),
+  };
+};
+
+export const originalPostQuery = (blogId: string, post: PostMetadata) => {
+  return {
+    queryKey: ["original-post", post._id, post.state],
+    queryFn: () => loadOriginalPost(blogId, post),
   };
 };
 
