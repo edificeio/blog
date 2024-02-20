@@ -9,6 +9,7 @@ import {
 } from "@edifice-ui/react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 
 import { useActionDefinitions } from "../ActionBar/useActionDefinitions";
 import { PostState } from "~/models/post";
@@ -18,12 +19,13 @@ import { useStoreUpdaters } from "~/store";
 
 export const BlogFilter = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [localPostsFilters, setLocalPostsFilter] = useState<PostsFilters>({
-    state: PostState.PUBLISHED,
-    search: "",
+    state: (searchParams.get("state") as PostState) || PostState.PUBLISHED,
+    search: searchParams.get("search") || "",
   });
-  const debouncePostsFilters = useDebounce(localPostsFilters, 500);
+  const debouncePostsFilters = useDebounce(localPostsFilters, 600);
   const { setPostsFilter } = useStoreUpdaters();
 
   const { counters } = useBlogCounter();
@@ -43,6 +45,7 @@ export const BlogFilter = () => {
 
   useEffect(() => {
     setPostsFilter(debouncePostsFilters);
+    setSearchParams(debouncePostsFilters, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncePostsFilters]);
 

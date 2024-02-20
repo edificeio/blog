@@ -89,8 +89,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
           ?.replace(/((&nbsp;)|\s)((&nbsp;)|\s)+/g, " ") || "";
       setSummaryContentPlain(plainText);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorRef.current?.getContent("plain")]);
+  }, [editorRef, summaryContent]);
 
   const classes = clsx("p-24", {
     "blog-post-badge-highlight": post._id === sidebarHighlightedPost?._id,
@@ -104,7 +103,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
       }}
       ref={cardRef}
     >
-      <div className="d-flex gap-12">
+      <div className="d-flex gap-12 ">
         <div className="blog-post-user-image">
           <Avatar
             alt={t("Avatar utilisateur")}
