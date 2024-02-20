@@ -7,7 +7,7 @@ import { needRedirect } from "~/utils/redirectNGLocation";
 export const rootLoader = () => async () => {
   const redirectPath = needRedirect();
   if (redirectPath) {
-    redirect(redirectPath);
+    return redirect(redirectPath);
   }
 
   return;
