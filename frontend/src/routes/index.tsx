@@ -4,7 +4,7 @@ import { RouteObject, createBrowserRouter } from "react-router-dom";
 
 import PageError from "./page-error";
 import { explorerConfig } from "~/config/config";
-import { Root, loader as rootLoader } from "~/routes/root";
+import { Root, rootLoader } from "~/routes/root";
 
 const routes = (queryClient: QueryClient): RouteObject[] => [
   {
