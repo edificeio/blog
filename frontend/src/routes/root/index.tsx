@@ -1,12 +1,22 @@
 import { Layout } from "@edifice-ui/react";
-import { Outlet } from "react-router-dom";
+import { Outlet, redirect } from "react-router-dom";
 
-function Root() {
+import { needRedirect } from "~/utils/redirectNGLocation";
+
+/** Check old format URL and redirect if needed */
+export const loader = () => async () => {
+  const redirectPath = needRedirect();
+  if (redirectPath) {
+    redirect(redirectPath);
+  }
+
+  return;
+};
+
+export const Root = () => {
   return (
     <Layout>
       <Outlet />
     </Layout>
   );
-}
-
-export default Root;
+};
