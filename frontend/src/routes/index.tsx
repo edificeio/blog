@@ -1,6 +1,11 @@
 import { QueryClient } from "@tanstack/react-query";
 import { Explorer } from "ode-explorer/lib";
-import { RouteObject, createBrowserRouter } from "react-router-dom";
+import {
+  RouteObject,
+  createBrowserRouter,
+  matchPath,
+  redirect,
+} from "react-router-dom";
 
 import { explorerConfig } from "~/config/config";
 import Root from "~/routes/root";
@@ -49,6 +54,27 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
       };
     },
     //FIXME errorElement: <ErrorPage />,
+  },
+  {
+    path: "/*",
+    element: <Root />,
+    loader: () => {
+      const ngLocation = location.hash.substring(1);
+
+      const blog = matchPath("/view/:blogId", ngLocation);
+      const post = matchPath("/detail/:blogId/:postId", ngLocation);
+      if (blog) {
+        return redirect(`/id/${blog?.params.blogId}`);
+      }
+      if (post) {
+        return redirect(
+          `/id/${post?.params.blogId}/post/${post?.params.postId}`,
+        );
+      }
+
+      // TODO add 404 page
+      throw new Error("Not found");
+    },
   },
 ];
 
