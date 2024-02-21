@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { Editor, EditorRef } from "@edifice-ui/editor";
 import {
   ArrowLeft,
-  ArrowUp,
   Delete,
   Edit,
   Options,
@@ -24,10 +23,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { usePostContext } from "./PostProvider";
-import { publishPost, savePost } from "~/services/api";
+import { publishPost } from "~/services/api";
 
-export const PostViewContent = () => {
-  const { blogId, post, mustSubmit, readOnly, canPublish } = usePostContext();
+export const PostContent = () => {
+  const { blogId, post, mustSubmit, readOnly, canPublish, save } =
+    usePostContext();
 
   const editorRef = useRef<EditorRef>(null);
   const titleRef = useRef(null);
@@ -35,7 +35,8 @@ export const PostViewContent = () => {
   const [content, setContent] = useState(post?.content ?? "");
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [variant, setVariant] = useState<"ghost" | "outline">("ghost");
-  const { t } = useTranslation();
+  const { t } = useTranslation("blog");
+  const { t: common_t } = useTranslation("common");
 
   const navigate = useNavigate();
 
@@ -54,30 +55,28 @@ export const PostViewContent = () => {
   const handleDeleteClick = () => alert("delete"); // TODO
   const handlePublishOrSubmitClick = () =>
     mustSubmit ? alert("submit") : alert("publish"); // TODO
-  const handleMoveupClick = () => alert("republish"); // TODO
 
   const handleCancelClick = () => {
     setMode("read");
     // Restore previous content
-    setContent(post.content);
+    setContent(post?.content ?? "");
   };
 
   const handleSaveClick = async () => {
     const contentHtml = editorRef.current?.getContent("html") as string;
-    if (!title || title.trim().length == 0 || !contentHtml) return;
-    // TODO set title+content in store
+    if (!post || !title || title.trim().length == 0 || !contentHtml) return;
     post.title = title;
     post.content = contentHtml;
-    const { state } = await savePost(blogId, post);
-    if (state) post.state = state;
-    // TODO set state in store
+    save();
+    setMode("read");
   };
 
-  const handleSaveThenPublishOrSubmitClick = async () => {
+  const handlePublishClick = async () => {
+    if (!blogId || !post) return;
     //TODO mustSubmit ? alert("submit") : alert("publish");
     try {
       await handleSaveClick();
-      await publishPost(blogId, post);
+      await publishPost(blogId, post, mustSubmit);
       // TODO update state
     } catch (e) {
       // HTTP failure has already been notified to the user.
@@ -95,7 +94,7 @@ export const PostViewContent = () => {
             leftIcon={<ArrowLeft />}
             onClick={handleBackwardClick}
           >
-            {t("back")}
+            {common_t("back")}
           </Button>
           <div className="d-flex m-16 gap-12">
             {readOnly ? (
@@ -121,7 +120,7 @@ export const PostViewContent = () => {
             ) : (
               <>
                 <Button leftIcon={<Edit />} onClick={handleEditClick}>
-                  {t("edit")}
+                  {common_t("edit")}
                 </Button>
                 <Dropdown>
                   <Dropdown.Trigger icon={<Options />}></Dropdown.Trigger>
@@ -129,18 +128,12 @@ export const PostViewContent = () => {
                     {canPublish && (
                       <Dropdown.Item
                         type="action"
+                        icon={<Send />}
                         onClick={handlePublishOrSubmitClick}
                       >
                         {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
                       </Dropdown.Item>
                     )}
-                    <Dropdown.Item
-                      type="action"
-                      icon={<ArrowUp />}
-                      onClick={handleMoveupClick}
-                    >
-                      {t("goUp")}
-                    </Dropdown.Item>
                     <Dropdown.Item
                       type="action"
                       icon={<Print />}
@@ -204,9 +197,9 @@ export const PostViewContent = () => {
           <Button
             type="button"
             leftIcon={<Send />}
-            onClick={handleSaveThenPublishOrSubmitClick}
+            onClick={handlePublishClick}
           >
-            {t("blog.publish")}
+            {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
           </Button>
         </div>
       )}
