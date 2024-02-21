@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { Editor, EditorRef } from "@edifice-ui/editor";
 import {
   ArrowLeft,
-  Delete,
   Edit,
   Options,
   Print,
@@ -13,16 +12,17 @@ import {
 } from "@edifice-ui/icons";
 import {
   Button,
-  Dropdown,
   FormControl,
   IconButton,
   Input,
   Label,
+  useToggle,
 } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { usePostContext } from "./PostProvider";
+import { ActionBarContainer } from "../ActionBar/ActionBarContainer";
 import { publishPost } from "~/services/api";
 
 export const PostContent = () => {
@@ -35,6 +35,8 @@ export const PostContent = () => {
   const [content, setContent] = useState(post?.content ?? "");
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [variant, setVariant] = useState<"ghost" | "outline">("ghost");
+  const [isBarOpen, toggleBar] = useToggle();
+
   const { t } = useTranslation("blog");
   const { t: common_t } = useTranslation("common");
 
@@ -122,35 +124,46 @@ export const PostContent = () => {
                 <Button leftIcon={<Edit />} onClick={handleEditClick}>
                   {common_t("edit")}
                 </Button>
-                <Dropdown>
-                  <Dropdown.Trigger icon={<Options />}></Dropdown.Trigger>
-                  <Dropdown.Menu>
-                    {canPublish && (
-                      <Dropdown.Item
-                        type="action"
-                        icon={<Send />}
-                        onClick={handlePublishOrSubmitClick}
-                      >
-                        {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
-                      </Dropdown.Item>
-                    )}
-                    <Dropdown.Item
-                      type="action"
-                      icon={<Print />}
-                      onClick={handlePrintClick}
-                    >
-                      {t("blog.print")}
-                    </Dropdown.Item>
 
-                    <Dropdown.Item
-                      type="action"
-                      icon={<Delete />}
-                      onClick={handleDeleteClick}
+                <IconButton
+                  color="secondary"
+                  variant="outline"
+                  icon={<Options />}
+                  onClick={toggleBar}
+                />
+
+                <ActionBarContainer visible={isBarOpen}>
+                  {canPublish ? (
+                    <Button
+                      type="button"
+                      color="primary"
+                      variant="filled"
+                      onClick={handlePublishOrSubmitClick}
                     >
-                      {t("blog.delete.post")}
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
+                      {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
+                    </Button>
+                  ) : (
+                    <></>
+                  )}
+
+                  <Button
+                    type="button"
+                    color="primary"
+                    variant="filled"
+                    onClick={handlePrintClick}
+                  >
+                    {t("blog.print")}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    color="primary"
+                    variant="filled"
+                    onClick={handleDeleteClick}
+                  >
+                    {t("blog.delete.post")}
+                  </Button>
+                </ActionBarContainer>
               </>
             )}
           </div>
