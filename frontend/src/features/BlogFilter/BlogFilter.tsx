@@ -15,7 +15,6 @@ import { useActionDefinitions } from "../ActionBar/useActionDefinitions";
 import { PostState } from "~/models/post";
 import { PostsFilters } from "~/models/postFilter";
 import { useBlogCounter } from "~/services/queries";
-import { useStoreUpdaters } from "~/store";
 
 export const BlogFilter = () => {
   const { t } = useTranslation();
@@ -26,7 +25,6 @@ export const BlogFilter = () => {
     search: searchParams.get("search") || "",
   });
   const debouncePostsFilters = useDebounce(localPostsFilters, 600);
-  const { setPostsFilter } = useStoreUpdaters();
 
   const { counters } = useBlogCounter();
   const { contrib, manager, creator } = useActionDefinitions([]);
@@ -44,7 +42,6 @@ export const BlogFilter = () => {
   };
 
   useEffect(() => {
-    setPostsFilter(debouncePostsFilters);
     setSearchParams(debouncePostsFilters, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncePostsFilters]);
