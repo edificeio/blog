@@ -54,8 +54,8 @@ export const BlogFilter = () => {
       type: "button",
       name: "published",
       props: {
-        className: clsx({
-          "bg-primary-200 selected":
+        className: clsx("fw-normal", {
+          "bg-primary-200 fw-bold":
             localPostsFilters.state === PostState.PUBLISHED,
         }),
         children: (
@@ -73,8 +73,8 @@ export const BlogFilter = () => {
       type: "button",
       name: "submitted",
       props: {
-        className: clsx({
-          "bg-primary-200 selected":
+        className: clsx("fw-normal", {
+          "bg-primary-200 fw-bold":
             localPostsFilters.state === PostState.SUBMITTED,
         }),
         children: (
@@ -103,9 +103,8 @@ export const BlogFilter = () => {
       type: "button",
       name: "draft",
       props: {
-        className: clsx({
-          "bg-primary-200 selected":
-            localPostsFilters.state === PostState.DRAFT,
+        className: clsx("fw-normal", {
+          "bg-primary-200 fw-bold": localPostsFilters.state === PostState.DRAFT,
         }),
         children: (
           <>
@@ -123,7 +122,7 @@ export const BlogFilter = () => {
     <div className="d-flex pb-16">
       <SearchBar
         isVariant
-        className="d-none d-md-flex flex-fill "
+        className="d-none d-md-flex flex-fill"
         onChange={handlerSearch}
         placeholder={t("Rechercher un billet ou un auteur")}
         size="md"
