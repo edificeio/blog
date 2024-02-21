@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { IAction } from "edifice-ts-client";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import {
   loadBlog,
@@ -10,6 +10,7 @@ import {
   loadPostsList,
   sessionHasWorkflowRights,
 } from "../api";
+import usePostsFilter from "~/hooks/usePostsFilter";
 import { Post, PostMetadata, PostState } from "~/models/post";
 import { usePostPageSize } from "~/store";
 import { IActionDefinition } from "~/utils/types";
@@ -136,10 +137,7 @@ export const useBlogCounter = (blogId?: string) => {
  */
 export const usePostsList = (blogId?: string) => {
   const params = useParams<{ blogId: string }>();
-  const [searchParams] = useSearchParams();
-  const state = (searchParams.get("state") as PostState) || PostState.PUBLISHED;
-  const search = searchParams.get("search") || "";
-
+  const { postsFilters } = usePostsFilter();
   const pageSize = usePostPageSize();
 
   if (!blogId) {
@@ -150,7 +148,7 @@ export const usePostsList = (blogId?: string) => {
   }
 
   const query = useInfiniteQuery(
-    postsListQuery(blogId!, pageSize, search, state),
+    postsListQuery(blogId!, pageSize, postsFilters.search, postsFilters.state),
   );
 
   return {

@@ -1,6 +1,6 @@
 import { redirect } from "react-router-dom";
 
-import { needRedirect } from "~/utils/redirectBlogNGLocation";
+import { needRedirect } from "~/utils/redirectBlogHashLocation";
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {

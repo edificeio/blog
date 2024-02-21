@@ -22,19 +22,22 @@ export type BlogPostCardProps = {
 export const BlogPostCard = ({ post }: BlogPostCardProps) => {
   const { fromNow } = useDate();
   const { t } = useTranslation();
+
   const directoryService = odeServices.directory();
+
   const sidebarHighlightedPost = useSidebarHighlightedPost();
-  const editorRef = useRef<EditorRef>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
   const { contrib, manager, creator } = useActionDefinitions([]);
   const navigate = useNavigate();
 
-  // Number of media to display on the preview card
-  const MAX_NUMBER_MEDIA_DISPLAY = 3;
-  // // Check size of screen to display the right number of media base on breakpoint
+  const editorRef = useRef<EditorRef>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
   const [summaryContent, setSummaryContent] = useState<string>("");
   const [summaryContentPlain, setSummaryContentPlain] = useState<string>("");
   const [mediaURLs, setMediaURLs] = useState<string[]>([]);
+
+  // Number of media to display on the preview card
+  const MAX_NUMBER_MEDIA_DISPLAY = 3;
 
   const getAvatarURL = (post: Post): string => {
     return directoryService.getAvatarUrl(post.author.userId, "user");
