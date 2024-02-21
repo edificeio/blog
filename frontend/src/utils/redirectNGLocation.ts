@@ -1,6 +1,6 @@
 import { matchPath } from "react-router-dom";
 
-/* CHeck location and return the new URL if needed
+/* Check location and return the new URL if needed
  * @returns the new URL if the location needs to be redirected, undefined otherwise
  */
 export function needRedirect(): string | undefined {
