@@ -9,7 +9,6 @@ export const rootLoader = async () => {
 };
 
 export const Root = () => {
-  console.log("root");
   return (
     <Layout>
       <Outlet />
