@@ -4,20 +4,21 @@ import { RouteObject, createBrowserRouter } from "react-router-dom";
 
 import PageError from "./page-error";
 import { explorerConfig } from "~/config/config";
+import { Root } from "~/routes/root";
 
 const routes = (queryClient: QueryClient): RouteObject[] => [
   {
     path: "/",
-    async lazy() {
-      const { Root, rootLoader } = await import("~/routes/root");
-      return {
-        loader: rootLoader(),
-        Component: Root,
-      };
-    },
+    element: <Root />,
     children: [
       {
         index: true,
+        async lazy() {
+          const { rootLoader } = await import("~/routes/root");
+          return {
+            loader: rootLoader,
+          };
+        },
 
         // TODO remove cast as any when ode-explorer is fixed
         element: <Explorer config={explorerConfig as any} />,
@@ -30,6 +31,17 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
           return {
             loader: blogLoader(queryClient),
             Component: Blog,
+          };
+        },
+      },
+      // Post is the page containing a specific post from a blog
+      {
+        path: "id/:blogId/post/edit",
+        async lazy() {
+          const { Component, loader } = await import("~/routes/post-edit");
+          return {
+            loader: loader(queryClient),
+            Component,
           };
         },
       },
@@ -61,28 +73,18 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
   {
     path: "/*",
     async lazy() {
-      console.log("redirect");
-      const { loader } = await import("./redirect");
+      const { redirectLoader } = await import("./redirect");
       return {
-        loader,
-      };
-    },
-    errorElement: <PageError />,
-  },
-  {
-    path: "*",
-    async lazy() {
-      console.log("redirect");
-      const { loader } = await import("./redirect");
-      return {
-        loader,
+        loader: redirectLoader,
       };
     },
     errorElement: <PageError />,
   },
 ];
 
+export const basename = import.meta.env.PROD ? "/blog" : "/";
+
 export const router = (queryClient: QueryClient) =>
   createBrowserRouter(routes(queryClient), {
-    basename: import.meta.env.PROD ? "/blog" : "/",
+    basename: basename,
   });
