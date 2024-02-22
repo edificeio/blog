@@ -34,7 +34,7 @@ const BlogPostList = () => {
     }
   }, [sidebarHighlightedPost]);
 
-  const emptyScreenMessage = (): string => {
+  const emptyScreenTitle = (): string => {
     if (postsFilters.search) {
       return t("post.search.internal.empty");
     }
@@ -61,7 +61,7 @@ const BlogPostList = () => {
       {posts?.length === 0 && isFetching === false && (
         <EmptyScreen
           imageSrc={`${imagePath}/emptyscreen/illu-blog.svg`}
-          text={emptyScreenMessage()}
+          title={emptyScreenTitle()}
         />
       )}
       {posts?.map((post) => <BlogPostCard key={post._id} post={post} />)}
