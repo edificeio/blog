@@ -57,12 +57,14 @@ const BlogPostList = () => {
   };
 
   return (
-    <div className="d-flex flex-column gap-24">
+    <div className="d-flex flex-column gap-24 flex-fill">
       {posts?.length === 0 && isFetching === false && (
-        <EmptyScreen
-          imageSrc={`${imagePath}/emptyscreen/illu-blog.svg`}
-          title={emptyScreenTitle()}
-        />
+        <div className="m-auto">
+          <EmptyScreen
+            imageSrc={`${imagePath}/emptyscreen/illu-blog.svg`}
+            title={emptyScreenTitle()}
+          />
+        </div>
       )}
       {posts?.map((post) => <BlogPostCard key={post._id} post={post} />)}
       {hasNextPage && (
