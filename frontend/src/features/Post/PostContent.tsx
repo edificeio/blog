@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 
 import { Editor, EditorRef } from "@edifice-ui/editor";
 import {
@@ -25,16 +25,22 @@ import { usePostContext } from "./PostProvider";
 import { ActionBarContainer } from "../ActionBar/ActionBarContainer";
 import { publishPost } from "~/services/api";
 
+const DeletePostModal = lazy(
+  async () => await import("~/features/Post/DeletePostModal"),
+);
+
 export const PostContent = () => {
-  const { blogId, post, mustSubmit, readOnly, canPublish, save } =
+  const { blogId, post, mustSubmit, readOnly, canPublish, save, trash } =
     usePostContext();
 
   const editorRef = useRef<EditorRef>(null);
   const titleRef = useRef(null);
+
   const [title, setTitle] = useState(post?.title ?? "");
   const [content, setContent] = useState(post?.content ?? "");
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [variant, setVariant] = useState<"ghost" | "outline">("ghost");
+  const [isDeletePostModalOpen, setIsDeletePostModalOpen] = useState(false);
   const [isBarOpen, toggleBar] = useToggle();
 
   const { t } = useTranslation("blog");
@@ -54,7 +60,11 @@ export const PostContent = () => {
     setMode("edit");
   };
 
-  const handleDeleteClick = () => alert("delete"); // TODO
+  const handleDeleteClick = () => {
+    trash();
+    navigate(`/id/${blogId}`);
+  };
+
   const handlePublishOrSubmitClick = () =>
     mustSubmit ? alert("submit") : alert("publish"); // TODO
 
@@ -64,7 +74,7 @@ export const PostContent = () => {
     setContent(post?.content ?? "");
   };
 
-  const handleSaveClick = async () => {
+  const handleSaveClick = () => {
     const contentHtml = editorRef.current?.getContent("html") as string;
     if (!post || !title || title.trim().length == 0 || !contentHtml) return;
     post.title = title;
@@ -77,7 +87,7 @@ export const PostContent = () => {
     if (!blogId || !post) return;
     //TODO mustSubmit ? alert("submit") : alert("publish");
     try {
-      await handleSaveClick();
+      handleSaveClick();
       await publishPost(blogId, post, mustSubmit);
       // TODO update state
     } catch (e) {
@@ -157,7 +167,7 @@ export const PostContent = () => {
                     type="button"
                     color="primary"
                     variant="filled"
-                    onClick={handleDeleteClick}
+                    onClick={() => setIsDeletePostModalOpen(true)}
                   >
                     {t("blog.delete.post")}
                   </Button>
@@ -214,6 +224,15 @@ export const PostContent = () => {
           </Button>
         </div>
       )}
+      <Suspense>
+        {isDeletePostModalOpen && (
+          <DeletePostModal
+            isOpen={isDeletePostModalOpen}
+            onSuccess={handleDeleteClick}
+            onCancel={() => setIsDeletePostModalOpen(false)}
+          />
+        )}
+      </Suspense>
     </>
   );
 };
