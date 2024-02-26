@@ -6,8 +6,8 @@ import { Button, FormControl, Input, Label } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { PostHeader } from "./PostHeader";
 import { usePostContext } from "./PostProvider";
+import { PostTitle } from "./PostTitle";
 import { publishPost } from "~/services/api";
 
 export const PostContent = () => {
@@ -74,7 +74,7 @@ export const PostContent = () => {
 
   return (
     <>
-      <PostHeader
+      <PostTitle
         isSpeeching={editorRef.current?.isSpeeching()}
         mode={mode}
         {...postHeaderEventsHandler}
