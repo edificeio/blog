@@ -21,8 +21,8 @@ import { ActionBarContainer } from "../ActionBar/ActionBarContainer";
 import { Post } from "~/models/post";
 import { getAvatarURL, getDatedKey } from "~/utils/PostUtils";
 
-const DeletePostModal = lazy(
-  async () => await import("~/features/Post/DeletePostModal"),
+const ConfirmModal = lazy(
+  async () => await import("~/components/ConfirmModal/ConfirmModal"),
 );
 
 export interface PostHeaderProps {
@@ -51,7 +51,7 @@ export const PostHeader = ({
   const { fromNow } = useDate();
   const { post, mustSubmit, readOnly, canPublish } = usePostContext();
 
-  const [isDeletePostModalOpen, setIsDeletePostModalOpen] = useState(false);
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
   const [isBarOpen, toggleBar] = useToggle();
 
   if (mode === "edit") return;
@@ -124,7 +124,7 @@ export const PostHeader = ({
                   type="button"
                   color="primary"
                   variant="filled"
-                  onClick={() => setIsDeletePostModalOpen(true)}
+                  onClick={() => setConfirmDeleteModal(true)}
                 >
                   {t("blog.delete.post")}
                 </Button>
@@ -152,11 +152,14 @@ export const PostHeader = ({
       </div>
 
       <Suspense>
-        {isDeletePostModalOpen && (
-          <DeletePostModal
-            isOpen={isDeletePostModalOpen}
+        {confirmDeleteModal && (
+          <ConfirmModal
+            id="confirmDeleteModal"
+            isOpen={confirmDeleteModal}
+            header={<>{t("blog.delete.post")}</>}
+            body={<p className="body">{t("confirm.remove.post")}</p>}
             onSuccess={onDelete}
-            onCancel={() => setIsDeletePostModalOpen(false)}
+            onCancel={() => setConfirmDeleteModal(false)}
           />
         )}
       </Suspense>
