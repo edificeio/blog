@@ -20,7 +20,7 @@ export const blogContentActions: Array<IActionDefinition> = [
   {
     // share a blog
     id: ACTION.SHARE,
-    workflow: workflows.print,
+    workflow: workflows.access,
   },
   {
     // create post in a blog
