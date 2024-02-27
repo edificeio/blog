@@ -42,7 +42,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.explorer.PostExplorerPlugin;
+import org.entcore.blog.security.BlogResourcesProvider;
 import org.entcore.blog.services.BlogService;
 import org.entcore.blog.services.PostService;
 import org.entcore.blog.to.PostFilter;
@@ -55,6 +57,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
@@ -985,7 +988,10 @@ public class DefaultPostService implements PostService {
 
 	@Override
 	public Future<Boolean> apply(AudienceCheckRightRequestMessage audienceCheckRightRequestMessage) {
-		log.info("Accept all audience rights checks");
-		return Future.succeededFuture(true);
+		final BlogResourcesProvider blogResourcesProvider = new BlogResourcesProvider();
+		final String userId = audienceCheckRightRequestMessage.getUserId();
+		final Set<String> userGroups = audienceCheckRightRequestMessage.getUserGroups();
+
+		return blogResourcesProvider.hasRightsOnAllPosts(userId, userGroups, audienceCheckRightRequestMessage.getResourceIds(), PostController.LIST_ACTION);
 	}
 }
