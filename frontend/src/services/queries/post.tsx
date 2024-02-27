@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { blogCounterQuery, postsListQuery } from "./blog";
 import {
+  createPost,
   deletePost,
   loadOriginalPost,
   loadPost,
@@ -25,6 +26,21 @@ export const originalPostQuery = (blogId: string, post: PostMetadata) => {
   };
 };
 
+export const useCreatePost = (blogId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ title, content }: { title: string; content: string }) =>
+      createPost(blogId, title, content),
+    onSuccess: () => {
+      return Promise.all([
+        // Publishing a post invalidates some queries.
+        queryClient.invalidateQueries(postsListQuery(blogId)),
+        queryClient.invalidateQueries(blogCounterQuery(blogId)),
+      ]);
+    },
+  });
+};
+
 export const useSavePost = (blogId: string, post: Post) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -35,6 +51,12 @@ export const useSavePost = (blogId: string, post: Post) => {
         ...post,
         state: result.state,
       });
+
+      return Promise.all([
+        // Publishing a post invalidates some queries.
+        queryClient.invalidateQueries(postsListQuery(blogId)),
+        queryClient.invalidateQueries(blogCounterQuery(blogId)),
+      ]);
     },
   });
 };
@@ -57,15 +79,12 @@ export const useDeletePost = (blogId: string, postId: string) => {
   });
 };
 
-export const usePublishPost = (
-  blogId: string,
-  post: Post,
-  mustSubmit: boolean,
-) => {
+export const usePublishPost = (blogId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => publishPost(blogId, post, mustSubmit),
-    onSuccess: () => {
+    mutationFn: ({ post, mustSubmit }: { post: Post; mustSubmit: boolean }) =>
+      publishPost(blogId, post, mustSubmit),
+    onSuccess: (_data, { post, mustSubmit }) => {
       // Publishing/submitting a post change its state. Update the query data accordingly.
       post.state = mustSubmit ? PostState.SUBMITTED : PostState.PUBLISHED;
       queryClient.setQueryData(postQuery(blogId, post).queryKey, post);

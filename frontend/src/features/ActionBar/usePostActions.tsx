@@ -39,7 +39,7 @@ export const usePostActions = (
 
   const saveMutation = useSavePost(blogId, post);
   const deleteMutation = useDeletePost(blogId, post._id);
-  const publishMutation = usePublishPost(blogId, post, mustSubmit);
+  const publishMutation = usePublishPost(blogId);
 
   return {
     actions,
@@ -51,6 +51,6 @@ export const usePostActions = (
       actions.findIndex((action) => action.id === ACTION.PUBLISH) >= 0,
     save: () => saveMutation.mutate(),
     trash: () => deleteMutation.mutate(),
-    publish: () => publishMutation.mutate(),
+    publish: () => publishMutation.mutate({ post, mustSubmit }),
   };
 };

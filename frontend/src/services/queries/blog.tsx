@@ -40,7 +40,7 @@ export const postsListQuery = (
   search?: string,
   state?: PostState,
 ) => {
-  const queryKey: any = { state, search };
+  const queryKey: any = state || search ? { state, search } : undefined;
   return {
     queryKey: ["postList", blogId, queryKey],
     queryFn: ({ pageParam = 0 }) =>
