@@ -202,11 +202,16 @@ export const usePublishPost = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => publishPost(blogId, post, mustSubmit),
-    onSuccess: () =>
-      Promise.all([
+    onSuccess: () => {
+      // Publishing/submitting a post change its state. Update the query data accordingly.
+      post.state = mustSubmit ? PostState.SUBMITTED : PostState.PUBLISHED;
+      queryClient.setQueryData(postQuery(blogId, post).queryKey, post);
+
+      return Promise.all([
         // Publishing a post invalidates some queries.
         queryClient.invalidateQueries(postsListQuery(blogId)),
         queryClient.invalidateQueries(blogCounterQuery(blogId)),
-      ]),
+      ]);
+    },
   });
 };
