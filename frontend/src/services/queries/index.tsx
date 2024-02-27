@@ -14,6 +14,7 @@ import {
   loadOriginalPost,
   loadPost,
   loadPostsList,
+  publishPost,
   savePost,
   sessionHasWorkflowRights,
 } from "../api";
@@ -189,6 +190,23 @@ export const useDeletePost = (blogId: string, postId: string) => {
             postQuery(blogId, { _id: postId } as PostMetadata),
           ),
         ),
+      ]),
+  });
+};
+
+export const usePublishPost = (
+  blogId: string,
+  post: Post,
+  mustSubmit: boolean,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => publishPost(blogId, post, mustSubmit),
+    onSuccess: () =>
+      Promise.all([
+        // Publishing a post invalidates some queries.
+        queryClient.invalidateQueries(postsListQuery(blogId)),
+        queryClient.invalidateQueries(blogCounterQuery(blogId)),
       ]),
   });
 };
