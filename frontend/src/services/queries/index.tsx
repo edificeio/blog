@@ -1,11 +1,11 @@
-import { useUpdateMutation } from "@edifice-ui/react";
+import { useShareMutation, useUpdateMutation } from "@edifice-ui/react";
 import {
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { IAction, UpdateParameters, UpdateResult } from "edifice-ts-client";
+import { IAction } from "edifice-ts-client";
 import { useParams } from "react-router-dom";
 
 import {
@@ -200,22 +200,20 @@ export const useUpdateBlog = (blog: Blog) => {
   return useUpdateMutation({
     application: "blog",
     options: {
-      onSuccess: async (
-        _data: UpdateResult,
-        { name, description, public: pub, slug, thumbnail }: UpdateParameters,
-      ) => {
-        const updatedBlog: Blog = {
-          ...blog,
-          title: name,
-          description: description,
-          thumbnail:
-            typeof thumbnail === "string"
-              ? thumbnail
-              : URL.createObjectURL(thumbnail as Blob | MediaSource),
-          visibility: pub ? "PUBLIC" : "OWNER",
-          slug: slug,
-        };
-        queryClient.setQueryData(blogQuery(blog._id).queryKey, updatedBlog);
+      onSuccess: async () => {
+        queryClient.invalidateQueries(blogQuery(blog._id));
+      },
+    },
+  });
+};
+
+export const useShareBlog = (blog: Blog) => {
+  const queryClient = useQueryClient();
+  return useShareMutation({
+    application: "blog",
+    options: {
+      onSuccess: async () => {
+        queryClient.invalidateQueries(blogQuery(blog._id));
       },
     },
   });
