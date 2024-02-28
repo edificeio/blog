@@ -36,6 +36,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.blog.controllers.BlogController;
 import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.services.PostService;
@@ -46,6 +48,8 @@ import org.entcore.common.utils.StringUtils;
 import java.util.*;
 
 public class BlogResourcesProvider implements ResourcesProvider {
+
+	protected static final Logger log = LoggerFactory.getLogger(BlogResourcesProvider.class);
 
 	private MongoDb mongo = MongoDb.getInstance();
 
@@ -149,17 +153,30 @@ public class BlogResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		request.pause();
-		hasRightsOnAllPosts(user.getUserId(), new HashSet<>(user.getGroupsIds()), Collections.singleton(postId), action).onSuccess(handler);
-		request.resume();
+		hasRightsOnAllPosts(user.getUserId(), new HashSet<>(user.getGroupsIds()), Collections.singleton(postId), action)
+				.onComplete(event -> {
+					request.resume();
+					if (event.succeeded()) {
+						handler.handle(event.result());
+					} else {
+						log.error("Error while checking access rights on posts.", event.cause().getMessage());
+					}
+				}).onSuccess(handler);
 	}
 
 	public Future<Boolean> hasRightsOnAllPosts(final String userId, final Set<String> userGroups, final Set<String> postIds, String action) {
 		Promise<Boolean> promise = Promise.promise();
 		final JsonArray resourceIdsArray = new JsonArray();
 		postIds.forEach(resourceIdsArray::add);
+		final JsonObject postKeys = new JsonObject()
+				.put("author", 1)
+				.put("blog", 1);
+		final JsonObject blogKeys = new JsonObject()
+				.put("author", 1)
+				.put("shared", 1);
 		final QueryBuilder postsQuery = QueryBuilder.start("_id").in(resourceIdsArray);
 		// retrieve posts
-		mongo.find("posts", MongoQueryBuilder.build(postsQuery), postsQueryResponse -> {
+		mongo.find("posts", MongoQueryBuilder.build(postsQuery), null, postKeys, postsQueryResponse -> {
 			Either<String, JsonArray> postsQueryResult = Utils.validResults(postsQueryResponse);
 			if (postsQueryResult.isRight()) {
 				JsonArray posts = postsQueryResult.right().getValue();
@@ -173,7 +190,7 @@ public class BlogResourcesProvider implements ResourcesProvider {
 					} else {
 						// Check rights on blog level
 						final QueryBuilder blogQuery = QueryBuilder.start("_id").in(blogIdsToBeChecked);
-						mongo.find("blogs", MongoQueryBuilder.build(blogQuery), blogQueryResponse -> {
+						mongo.find("blogs", MongoQueryBuilder.build(blogQuery), null, blogKeys, blogQueryResponse -> {
 							Either<String, JsonArray> blogQueryResult = Utils.validResults(blogQueryResponse);
 							if (blogQueryResult.isRight()) {
 								JsonArray blogs = blogQueryResult.right().getValue();
@@ -204,12 +221,11 @@ public class BlogResourcesProvider implements ResourcesProvider {
 	 */
 	private JsonArray getBlogIdsTobeChecked(JsonArray posts, String userId) {
 		JsonArray blogIdsToBeChecked = new JsonArray();
-		posts.forEach(post -> {
-			JsonObject jsonPost = (JsonObject) post;
-			if (!jsonPost.getJsonObject("author").getString("userId").equals(userId)) {
-				blogIdsToBeChecked.add(jsonPost.getJsonObject("blog").getString("$id"));
-			}
-		});
+		posts.stream()
+				.filter(post -> !((JsonObject) post).getJsonObject("author").getString("userId").equals(userId))
+				.map(post -> ((JsonObject) post).getJsonObject("blog").getString("$id"))
+				.distinct()
+				.forEach(blogIdsToBeChecked::add);
 		return blogIdsToBeChecked;
 	}
 
