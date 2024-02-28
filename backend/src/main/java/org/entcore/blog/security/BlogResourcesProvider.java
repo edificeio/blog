@@ -24,28 +24,26 @@ package org.entcore.blog.security;
 
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.Utils;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import org.entcore.blog.controllers.BlogController;
-import org.entcore.blog.controllers.PostController;
-import org.entcore.blog.services.PostService;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Binding;
-import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.utils.StringUtils;
-
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.blog.controllers.BlogController;
+import org.entcore.blog.controllers.PostController;
+import org.entcore.blog.services.PostService;
+import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BlogResourcesProvider implements ResourcesProvider {
 
