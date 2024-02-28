@@ -149,7 +149,7 @@ export const useUpdateBlog = (blog: Blog) => {
     application: "blog",
     options: {
       onSuccess: async () => {
-        queryClient.invalidateQueries(blogQuery(blog._id));
+        return queryClient.invalidateQueries(blogQuery(blog._id));
       },
     },
   });
@@ -161,7 +161,7 @@ export const useShareBlog = (blog: Blog) => {
     application: "blog",
     options: {
       onSuccess: async () => {
-        queryClient.invalidateQueries(blogQuery(blog._id));
+        return queryClient.invalidateQueries(blogQuery(blog._id));
       },
     },
   });
