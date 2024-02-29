@@ -57,7 +57,7 @@ export const CommentsCreate = ({ comments }: CommentsCreateProps) => {
               {inputLength}/{MAX_COMMENT_LENGTH}
             </span>
             <Button leftIcon={<Send />} variant="ghost" size="lg">
-              {t("submit")}
+              {t("blog.comment.post")}
             </Button>
           </div>
         </div>
