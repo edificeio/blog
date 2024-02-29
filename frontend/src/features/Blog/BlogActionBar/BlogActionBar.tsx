@@ -67,7 +67,6 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   const handleEditClose = () => {
     toogleUpdateModalOpen();
-    toggleBar();
   };
 
   const handleEditSuccess = () => {
@@ -81,7 +80,6 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   const handleDeleteClose = () => {
     toogleDeleteModalOpen();
-    toggleBar();
   };
 
   const handleDeleteSuccess = () => {
@@ -96,7 +94,6 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   const handlePublishClose = () => {
     tooglePublishModalOpen();
-    toggleBar();
   };
 
   const handleShareClick = () => {
@@ -105,7 +102,6 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   const handleShareClose = () => {
     toogleShareModalOpen();
-    toggleBar();
   };
 
   const handleShareSuccess = () => {
