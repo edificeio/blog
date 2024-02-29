@@ -2,12 +2,19 @@ import { useId, useRef, useState } from "react";
 
 import { Send } from "@edifice-ui/icons";
 import { Avatar, Button, useSession } from "@edifice-ui/react";
+import clsx from "clsx";
 import { odeServices } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-const MAX_COMMENT_LENGTH = 10;
+import { Comment } from "~/models/comment";
 
-export const CommentsCreate = () => {
+const MAX_COMMENT_LENGTH = 800;
+
+export interface CommentsCreateProps {
+  comments: Comment[];
+}
+
+export const CommentsCreate = ({ comments }: CommentsCreateProps) => {
   const { t } = useTranslation("blog");
   const { userId } = useSession().data;
   const inputId = useId();
@@ -20,9 +27,13 @@ export const CommentsCreate = () => {
   const handleInputChange = () => {
     setInputLength(inputRef.current.value.length);
   };
+  const headerClass = clsx(
+    "px-12 py-16 d-flex gap-8",
+    comments.length > 0 && "border rounded-3 bg-gray-300",
+  );
 
   return (
-    <div className="border rounded-3 bg-gray-300 px-12 py-16 d-flex gap-8">
+    <div className={headerClass}>
       <Avatar
         alt={t("post.author.avatar")}
         size="sm"
