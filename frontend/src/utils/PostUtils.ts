@@ -1,9 +1,8 @@
 import { odeServices } from "edifice-ts-client";
 
-import { Comment } from "~/models/comment";
 import { Post, PostState } from "~/models/post";
 
-export function getAvatarURL(post: Post | Comment): string {
+export function getAvatarURL(post: Post): string {
   return odeServices.directory().getAvatarUrl(post.author.userId, "user");
 }
 
