@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { Button, useToggle } from "@edifice-ui/react";
 import { ACTION } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import { postContentActions } from "~/config/postContentActions";
 import { ActionBarContainer } from "~/features/ActionBar/ActionBarContainer";
@@ -39,17 +40,22 @@ export const PostPreviewActionBar = ({
   const { mustSubmit, isActionAvailable, goUp, publish, trash } = postActions;
 
   const { t } = useTranslation("blog");
+  const navigate = useNavigate();
 
   const [isDeleteModalOpen, toogleDeleteModalOpen] = useToggle();
 
   const { setActionBarPostId } = useStoreUpdaters();
   const actionBarPostId = useActionBarPostId();
 
+  const handleEditClick = () => {
+    navigate(`/id/${blogId}/post/${post._id}?edit=true`);
+  };
+
   const handlePrintClick = () => {
     window.open(`/print/${blogId}/post/${post._id}`, "_blank");
   };
 
-  const handlePublish = () => {
+  const handlePublishClick = () => {
     publish().then(() => {
       setActionBarPostId();
     });
@@ -67,9 +73,16 @@ export const PostPreviewActionBar = ({
   return (
     <>
       <ActionBarContainer visible={actionBarPostId === post._id}>
+        {isActionAvailable(ACTION.OPEN) ? (
+          <Button type="button" variant="filled" onClick={handleEditClick}>
+            {t("blog.edit.post")}
+          </Button>
+        ) : (
+          <></>
+        )}
         {post.state !== PostState.PUBLISHED &&
         isActionAvailable(ACTION.PUBLISH) ? (
-          <Button type="button" variant="filled" onClick={handlePublish}>
+          <Button type="button" variant="filled" onClick={handlePublishClick}>
             {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
           </Button>
         ) : (
