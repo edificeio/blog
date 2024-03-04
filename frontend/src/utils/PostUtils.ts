@@ -1,9 +1,9 @@
-import { odeServices } from "edifice-ts-client";
+import { ID, odeServices } from "edifice-ts-client";
 
-import { Post, PostState } from "~/models/post";
+import { PostState } from "~/models/post";
 
-export function getAvatarURL(post: Post): string {
-  return odeServices.directory().getAvatarUrl(post.author.userId, "user");
+export function getAvatarURL(userId: ID): string {
+  return odeServices.directory().getAvatarUrl(userId, "user");
 }
 
 export function getDatedKey(state: PostState) {

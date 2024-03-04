@@ -106,7 +106,7 @@ export const BlogPostCard = ({ post }: BlogPostCardProps) => {
           <Avatar
             alt={t("Avatar utilisateur")}
             size="md"
-            src={getAvatarURL(post)}
+            src={getAvatarURL(post.author.userId)}
             variant="circle"
           />
         </div>

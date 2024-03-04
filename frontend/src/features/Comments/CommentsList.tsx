@@ -15,7 +15,14 @@ export const CommentsList = ({ comments }: CommentsListProps) => {
   return comments.length ? (
     <div className="mb-48">
       {comments.map((comment) => (
-        <CommentCard key={comment.id} comment={comment} className="mt-16" />
+        <CommentCard
+          key={comment.id}
+          className="mt-16"
+          author={comment.author}
+          content={comment.comment}
+          mode="read"
+          created={comment.created}
+        />
       ))}
     </div>
   ) : (
