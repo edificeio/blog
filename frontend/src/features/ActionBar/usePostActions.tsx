@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { ACTION, ActionType, IAction } from "edifice-ts-client";
 
 import { useActionDefinitions } from "./useActionDefinitions";
-import { Post } from "~/models/post";
+import { Post, PostMetadata } from "~/models/post";
 import {
   useDeletePost,
   useGoUpPost,
@@ -26,13 +26,13 @@ export interface PostActions {
    */
   isActionAvailable: (action: ActionType) => boolean;
   /** Action to save a post as draft; invalidates cached queries if needed. */
-  save: () => void;
+  save: () => Promise<PostMetadata>;
   /** Action to delete a post; invalidates cached queries if needed. */
-  trash: () => void;
+  trash: () => Promise<void>;
   /** Action to publish or submit a post; invalidates cached queries if needed. */
-  publish: () => void;
+  publish: () => Promise<Post>;
   /** Action to move up a post; invalidates cached queries if needed. */
-  goUp: () => void;
+  goUp: () => Promise<PostMetadata>;
 }
 
 export const usePostActions = (
@@ -63,9 +63,9 @@ export const usePostActions = (
     canPublish:
       !!actions &&
       actions.findIndex((action) => action.id === ACTION.PUBLISH) >= 0,
-    save: () => saveMutation.mutate(),
-    trash: () => deleteMutation.mutate(),
-    publish: () => publishMutation.mutate({ post, mustSubmit }),
-    goUp: () => goUpMutation.mutate(),
+    save: () => saveMutation.mutateAsync(),
+    trash: () => deleteMutation.mutateAsync(),
+    publish: () => publishMutation.mutateAsync({ post, mustSubmit }),
+    goUp: () => goUpMutation.mutateAsync(),
   };
 };

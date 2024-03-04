@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 
 import { Button, useToggle } from "@edifice-ui/react";
 import { ACTION } from "edifice-ts-client";
@@ -8,8 +8,7 @@ import { postContentActions } from "~/config/postContentActions";
 import { ActionBarContainer } from "~/features/ActionBar/ActionBarContainer";
 import { usePostActions } from "~/features/ActionBar/usePostActions";
 import { Post, PostState } from "~/models/post";
-import { useDeletePost, useGoUpPost } from "~/services/queries";
-import { useActionBarPostId } from "~/store";
+import { useActionBarPostId, useStoreUpdaters } from "~/store";
 
 const DeleteModal = lazy(
   async () => await import("~/components/ConfirmModal/ConfirmModal"),
@@ -37,39 +36,28 @@ export const PostPreviewActionBar = ({
 }: PostPreviewActionBarProps) => {
   // Get available actions and requirements for the post.
   const postActions = usePostActions(postContentActions, blogId, post);
-  const { mustSubmit, isActionAvailable } = postActions;
+  const { mustSubmit, isActionAvailable, goUp, publish, trash } = postActions;
 
-  const deleteMutation = useDeletePost(blogId, post._id);
-  const goUpMutation = useGoUpPost(blogId, post._id);
   const { t } = useTranslation("blog");
 
   const [isDeleteModalOpen, toogleDeleteModalOpen] = useToggle();
 
+  const { setActionBarPostId } = useStoreUpdaters();
   const actionBarPostId = useActionBarPostId();
-  const [isActionBarOpen, toogleActionBarOpen] = useToggle();
-
-  useEffect(() => {
-    if (actionBarPostId === post._id) {
-      toogleActionBarOpen(() => true);
-    } else {
-      toogleActionBarOpen(() => true);
-    }
-  }, [actionBarPostId, post._id, toogleActionBarOpen]);
 
   const handlePrintClick = () => {
     window.open(`/print/${blogId}/post/${post._id}`, "_blank");
   };
 
-  const handlePublish = () => {};
-
-  const handleGoUp = () => {
-    goUpMutation.mutate();
+  const handlePublish = () => {
+    publish().then(() => {
+      setActionBarPostId();
+    });
   };
 
   const handleDeleteSuccess = () => {
-    deleteMutation.mutateAsync().then(() => {
-      toogleDeleteModalOpen(false);
-    });
+    trash();
+    toogleDeleteModalOpen(false);
   };
 
   const handleDeleteClose = () => {
@@ -78,7 +66,7 @@ export const PostPreviewActionBar = ({
 
   return (
     <>
-      <ActionBarContainer visible={isActionBarOpen}>
+      <ActionBarContainer visible={actionBarPostId === post._id}>
         {post.state !== PostState.PUBLISHED &&
         isActionAvailable(ACTION.PUBLISH) ? (
           <Button type="button" variant="filled" onClick={handlePublish}>
@@ -90,7 +78,7 @@ export const PostPreviewActionBar = ({
         {post.state === PostState.PUBLISHED &&
         isActionAvailable(ACTION.MOVE) &&
         index > 0 ? (
-          <Button type="button" variant="filled" onClick={handleGoUp}>
+          <Button type="button" variant="filled" onClick={goUp}>
             {t("goUp")}
           </Button>
         ) : (
