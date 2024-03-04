@@ -51,7 +51,7 @@ export const PostContent = ({ blogId, post }: PostContentProps) => {
     onEdit: () => {
       setMode("edit");
     },
-    onPrint: () => alert("print !"), // TODO
+    onPrint: () => window.open(`/print/${blogId}/post/${post._id}`, "_blank"),
     onPublish: () => {
       publish();
     },

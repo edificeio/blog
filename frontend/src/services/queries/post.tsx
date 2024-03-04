@@ -6,6 +6,7 @@ import {
   deletePost,
   loadOriginalPost,
   loadPost,
+  goUpPost,
   publishPost,
   savePost,
 } from "../api/post";
@@ -56,6 +57,19 @@ export const useSavePost = (blogId: string, post: Post) => {
         // Publishing a post invalidates some queries.
         queryClient.invalidateQueries(postsListQuery(blogId)),
         queryClient.invalidateQueries(blogCounterQuery(blogId)),
+      ]);
+    },
+  });
+};
+
+export const useGoUpPost = (blogId: string, postId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => goUpPost(blogId, postId),
+    onSuccess: () => {
+      return Promise.all([
+        // Publishing a post invalidates some queries.
+        queryClient.invalidateQueries(postsListQuery(blogId)),
       ]);
     },
   });
