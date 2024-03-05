@@ -180,7 +180,7 @@ public class DefaultBlogService implements BlogService{
 			if (validFindPostsResult.isRight()) {
 				Set<String> ids = validFindPostsResult.right().getValue().getJsonArray("results").stream().map(r -> ((JsonObject) r).getString("_id")).collect(Collectors.toSet());
 				audienceHelper.notifyResourcesDeletion("blog", "posts", ids)
-						.onFailure(th -> log.error("Failed to notify audience of posts deletion", th));
+						.onFailure(th -> log.error("Failed to notify audience of deletion of posts : " + ids, th));
 				mongo.delete("posts", MongoQueryBuilder.build(q), deletePostsResult -> {
 					Either<String, JsonObject> validatedResult = Utils.validResult(deletePostsResult);
 					if (validatedResult.isRight()) {
