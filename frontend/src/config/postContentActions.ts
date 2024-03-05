@@ -33,9 +33,4 @@ export const postContentActions: Array<IActionDefinition> = [
     id: ACTION.MOVE,
     workflow: workflows.access,
   },
-  {
-    // publish/delete a comment
-    id: ACTION.COMMENT,
-    workflow: workflows.comment,
-  },
 ];
