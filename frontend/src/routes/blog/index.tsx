@@ -5,10 +5,10 @@ import { QueryClient } from "@tanstack/react-query";
 import { LoaderFunctionArgs } from "react-router-dom";
 
 import { blogContentActions } from "~/config/blogContentActions";
-import { BlogFilter } from "~/features/Blog/BlogFilter/BlogFilter";
-import { BlogHeader } from "~/features/Blog/BlogHeader/BlogHeader";
-import BlogPostList from "~/features/Blog/BlogPostList/BlogPostList";
-import BlogSidebar from "~/features/Blog/BlogSidebar/BlogSidebar";
+import { BlogFilter } from "~/features/Blog/BlogFilter";
+import { BlogHeader } from "~/features/Blog/BlogHeader";
+import BlogPostList from "~/features/Blog/BlogPostList";
+import BlogSidebar from "~/features/Blog/BlogSidebar";
 import { PostState } from "~/models/post";
 import {
   availableActionsQuery,
@@ -84,7 +84,7 @@ export function Blog() {
       <BlogHeader blog={blog} />
       <div className="d-flex flex-fill">
         <BlogSidebar />
-        <div className="flex-fill py-16 ps-16 d-flex flex-column">
+        <div className="flex-fill py-16 ps-md-16 d-flex flex-column">
           {!!counters?.countAll && <BlogFilter />}
           <BlogPostList />
         </div>

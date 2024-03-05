@@ -16,7 +16,7 @@ import {
 } from "../api/blog";
 import usePostsFilter from "~/hooks/usePostsFilter";
 import { Post, PostState } from "~/models/post";
-import { usePostPageSize } from "~/store";
+import { useBlogState } from "~/store";
 import { IActionDefinition } from "~/utils/types";
 
 /** Query blog data */
@@ -34,6 +34,31 @@ export const blogCounterQuery = (blogId: string) => {
   };
 };
 
+export const postsListQueryKey = (
+  blogId: string,
+  state?: PostState,
+  search?: string,
+) => {
+  const queryKey = ["postList"];
+  if (blogId) {
+    queryKey.push(blogId);
+  }
+
+  const queryKeyFilter: any = {};
+
+  if (state) {
+    queryKeyFilter.state = state;
+  }
+  if (search) {
+    queryKeyFilter.search = search;
+  }
+  if (state || search) {
+    queryKey.push(queryKeyFilter);
+  }
+
+  return queryKey;
+};
+
 export const postsListQuery = (
   blogId: string,
   pageSize?: number,
@@ -41,16 +66,20 @@ export const postsListQuery = (
   search?: string,
   nbComments: boolean = true,
 ) => {
-  const queryKey: any = {};
-  if (state) {
-    queryKey.state = state;
-  }
-  if (search) {
-    queryKey.search = search;
+  const queryKey = ["postList", blogId];
+  const queryKeyFilter: any = {};
+  if (state || search) {
+    if (state) {
+      queryKeyFilter.state = state;
+    }
+    if (search) {
+      queryKeyFilter.search = search;
+    }
+    queryKey.push(queryKeyFilter);
   }
 
   return {
-    queryKey: ["postList", blogId, queryKey.length > 0 ? queryKey : undefined],
+    queryKey: queryKey,
     queryFn: ({ pageParam = 0 }) =>
       loadPostsList(blogId, pageParam, state, search, nbComments),
     initialPageParam: 0,
@@ -132,7 +161,7 @@ export const useBlogCounter = (blogId?: string) => {
 export const usePostsList = (blogId?: string, getAll?: boolean) => {
   const params = useParams<{ blogId: string }>();
   const { postsFilters } = usePostsFilter();
-  const pageSize = usePostPageSize();
+  const { postPageSize } = useBlogState();
 
   if (!blogId) {
     if (!params.blogId) {
@@ -144,7 +173,7 @@ export const usePostsList = (blogId?: string, getAll?: boolean) => {
   const query = useInfiniteQuery(
     postsListQuery(
       blogId!,
-      pageSize,
+      postPageSize,
       !getAll ? postsFilters.state : undefined,
       !getAll ? postsFilters.search : undefined,
       !getAll,

@@ -10,14 +10,14 @@ import {
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
-import { useActionDefinitions } from "../../ActionBar/useActionDefinitions";
+import { useActionDefinitions } from "../ActionBar/useActionDefinitions";
 import usePostsFilter from "~/hooks/usePostsFilter";
 import { PostState } from "~/models/post";
 import { PostsFilters } from "~/models/postFilter";
 import { useBlogCounter } from "~/services/queries";
 
 export const BlogFilter = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation("blog");
   const { postsFilters, setPostsFilters } = usePostsFilter();
 
   const [localPostsFilters, setLocalPostsFilter] =
@@ -55,8 +55,7 @@ export const BlogFilter = () => {
         }),
         children: (
           <span>
-            <span>{t("Publiés")} </span>
-            {counters?.countPublished}
+            {t("filters.published", { count: counters?.countPublished })}{" "}
           </span>
         ),
         onClick: () => {
@@ -74,7 +73,9 @@ export const BlogFilter = () => {
         }),
         children: (
           <>
-            <span>{t(creator || manager ? "À valider" : "Envoyés")} </span>
+            <span>
+              {t(creator || manager ? "filters.submitted" : "filters.sent")}{" "}
+            </span>
             {counters?.countSubmitted ? (
               <Badge
                 variant={{
@@ -102,10 +103,7 @@ export const BlogFilter = () => {
           "bg-primary-200 fw-bold": localPostsFilters.state === PostState.DRAFT,
         }),
         children: (
-          <>
-            <span>{t("Brouillons")} </span>
-            {counters?.countDraft}
-          </>
+          <span>{t("filters.drafts", { count: counters?.countDraft })} </span>
         ),
         onClick: () => {
           handleFilter(PostState.DRAFT);
@@ -125,7 +123,7 @@ export const BlogFilter = () => {
       {(manager || creator || contrib) && (
         <Toolbar
           variant="no-shadow"
-          className="ps-4 py-2 ms-md-16 border border-primary-200 rounded-3 blog-filter-toolbar"
+          className="ps-4 py-2 ms-md-16 border border-primary-200 rounded-3 blog-filter-toolbar flex-wrap flex-md-nowrap row-gap-4"
           items={filterToolbar}
         ></Toolbar>
       )}

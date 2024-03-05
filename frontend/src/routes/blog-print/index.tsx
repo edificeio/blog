@@ -8,7 +8,7 @@ import { LoaderFunctionArgs } from "react-router-dom";
 
 import { blogContentActions } from "~/config/blogContentActions";
 import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions";
-import { BlogHeader } from "~/features/Blog/BlogHeader/BlogHeader";
+import { BlogHeader } from "~/features/Blog/BlogHeader";
 import { PostTitle } from "~/features/Post/PostTitle";
 import {
   availableActionsQuery,
@@ -48,8 +48,6 @@ export function BlogPrint() {
     posts,
     query: { fetchNextPage, hasNextPage, isSuccess, data },
   } = usePostsList(blog?._id, true);
-
-  useEffect(() => {}, []);
 
   useEffect(() => {
     if (!hasRight(ACTION.PRINT)) {

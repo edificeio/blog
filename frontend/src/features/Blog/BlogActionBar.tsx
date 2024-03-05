@@ -110,7 +110,7 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
   };
 
   const handlePrintClick = () => {
-    window.open(`/id/${blog._id}/print`, "_blank");
+    window.open(`/print/id/${blog._id}`, "_blank");
   };
 
   const { actions: availableActions } = useBlogActions(blog);
@@ -187,7 +187,7 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
               variant="filled"
               onClick={handleDeleteClick}
             >
-              {t("blog.delete.blog")}
+              {t("blog.delete")}
             </Button>
           ) : (
             <></>
