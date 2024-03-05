@@ -67,10 +67,8 @@ export const useGoUpPost = (blogId: string, postId: string) => {
   return useMutation({
     mutationFn: () => goUpPost(blogId, postId),
     onSuccess: () => {
-      return Promise.all([
-        // Publishing a post invalidates some queries.
-        queryClient.invalidateQueries(postsListQuery(blogId)),
-      ]);
+      // Publishing a post invalidates some queries.
+      return queryClient.invalidateQueries(postsListQuery(blogId));
     },
   });
 };

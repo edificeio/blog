@@ -12,11 +12,7 @@ import { PostPreviewActionBar } from "./PostPreviewActionBar";
 import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions";
 import { Post, PostState } from "~/models/post";
 import { useBlog } from "~/services/queries";
-import {
-  useActionBarPostId,
-  useSidebarHighlightedPost,
-  useStoreUpdaters,
-} from "~/store";
+import { useBlogState, useStoreUpdaters } from "~/store";
 import { getAvatarURL, getDatedKey } from "~/utils/PostUtils";
 
 export type PostPreviewProps = {
@@ -38,8 +34,8 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
   const { blog } = useBlog();
   const { contrib, manager, creator } = useActionDefinitions([]);
   const { setActionBarPostId } = useStoreUpdaters();
-  const sidebarHighlightedPost = useSidebarHighlightedPost();
-  const actionBarPostId = useActionBarPostId();
+  const { sidebarHighlightedPost } = useBlogState();
+  const { actionBarPostId } = useBlogState();
 
   const editorRef = useRef<EditorRef>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -56,11 +52,11 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
       date: fromNow(post.modified.$date),
     });
 
-  const handleOnClick = () => {
+  const handleCardClick = () => {
     navigate(`./post/${post?._id}`);
   };
 
-  const handleOnSelect = useCallback(() => {
+  const handleCardSelect = useCallback(() => {
     if (actionBarPostId === post._id) {
       setActionBarPostId();
     } else {
@@ -122,10 +118,10 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
         className={classes}
         isSelected={actionBarPostId === post._id}
         onClick={() => {
-          handleOnClick();
+          handleCardClick();
         }}
         onSelect={() => {
-          handleOnSelect();
+          handleCardSelect();
         }}
         isSelectable={true}
         ref={cardRef}

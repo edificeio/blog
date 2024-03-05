@@ -9,7 +9,7 @@ import { postContentActions } from "~/config/postContentActions";
 import { ActionBarContainer } from "~/features/ActionBar/ActionBarContainer";
 import { usePostActions } from "~/features/ActionBar/usePostActions";
 import { Post, PostState } from "~/models/post";
-import { useActionBarPostId, useStoreUpdaters } from "~/store";
+import { useBlogState, useStoreUpdaters } from "~/store";
 
 const DeleteModal = lazy(
   async () => await import("~/components/ConfirmModal/ConfirmModal"),
@@ -45,7 +45,7 @@ export const PostPreviewActionBar = ({
   const [isDeleteModalOpen, toogleDeleteModalOpen] = useToggle();
 
   const { setActionBarPostId } = useStoreUpdaters();
-  const actionBarPostId = useActionBarPostId();
+  const { actionBarPostId } = useBlogState();
 
   const handleEditClick = () => {
     navigate(`/id/${blogId}/post/${post._id}?edit=true`);
@@ -55,10 +55,9 @@ export const PostPreviewActionBar = ({
     window.open(`/print/${blogId}/post/${post._id}`, "_blank");
   };
 
-  const handlePublishClick = () => {
-    publish().then(() => {
-      setActionBarPostId();
-    });
+  const handlePublishClick = async () => {
+    await publish();
+    setActionBarPostId();
   };
 
   const handleDeleteSuccess = () => {

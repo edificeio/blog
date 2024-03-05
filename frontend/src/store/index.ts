@@ -30,14 +30,12 @@ export const useStoreContext = create<State>()((set, get) => ({
   },
 }));
 
-export const useSidebarHighlightedPost = () =>
-  useStoreContext((state) => state.sidebarHighlightedPost);
-
-export const usePostPageSize = () =>
-  useStoreContext((state) => state.postPageSize);
-
-export const useActionBarPostId = () =>
-  useStoreContext((state) => state.actionBarPostId);
+export const useBlogState = () =>
+  useStoreContext((state) => ({
+    sidebarHighlightedPost: state.sidebarHighlightedPost,
+    postPageSize: state.postPageSize,
+    actionBarPostId: state.actionBarPostId,
+  }));
 
 /* Export updaters */
 export const useStoreUpdaters = () =>
