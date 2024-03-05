@@ -1,21 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { EditorContent, useCommentEditor } from "@edifice-ui/editor";
+import { Content, EditorContent, useCommentEditor } from "@edifice-ui/editor";
 import { Send } from "@edifice-ui/icons";
-import {
-  Avatar,
-  Badge,
-  Button,
-  CoreDate,
-  useDate,
-  useUser,
-} from "@edifice-ui/react";
+import { Avatar, Badge, Button, CoreDate, useDate } from "@edifice-ui/react";
 import clsx from "clsx";
-import { ACTION, ID, IUserDescription } from "edifice-ts-client";
+import { ID, IUserDescription } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
-import { postCommentActions } from "~/config/postCommentActions";
-import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions";
 import { getAvatarURL } from "~/utils/PostUtils";
 
 const MAX_COMMENT_LENGTH = 800;
@@ -32,12 +23,10 @@ export interface CommentProps {
 
   created?: CoreDate;
 
-  content?: any /*FIXME Content*/;
+  content?: Content;
 
-  onEdit?: () => void;
   onRemove?: () => void;
-  onPublish?: (content: any /*FIXME Content*/) => void;
-  onCancel?: () => void;
+  onPublish?: (content: Content) => void;
 }
 
 export const CommentCard = ({
@@ -46,20 +35,18 @@ export const CommentCard = ({
   content,
   mode,
   className,
+  onPublish,
+  onRemove,
 }: CommentProps) => {
   const [editable, setEditable] = useState(mode === "edit");
 
   const { t } = useTranslation("common");
   const { fromNow } = useDate();
-  const { editor, commentLength } = useCommentEditor(
+  const { editor, commentLength, getComment, resetComment } = useCommentEditor(
     editable,
     content ?? "",
     MAX_COMMENT_LENGTH,
   );
-  const { user } = useUser();
-  const { hasRight, manager: isManager } =
-    useActionDefinitions(postCommentActions);
-
   const badge = useMemo(() => {
     const profile = author.profiles?.[0] ?? "Guest";
     if (["Teacher", "Student", "Relative", "Personnel"].indexOf(profile) < 0)
@@ -78,26 +65,24 @@ export const CommentCard = ({
     );
   }, [author.profiles, t]);
 
-  // When content is updated through props, render it.
-  useEffect(() => {
-    editor?.commands.setContent(content);
-  }, [content, editor?.commands]);
-
-  // When editable flag is changing, so does the corresponding editor's property.
-  useEffect(() => {
-    editor?.setEditable(editable);
-  }, [editable, editor]);
-
   if (!editor) return <></>;
 
-  // Can the current user edit this post ?
-  const canEdit = author.userId === user?.userId && hasRight(ACTION.COMMENT);
+  // Modifying an existing comment ? Truthy if yes, falsy if creating a new one.
+  const modifying = content !== undefined;
 
-  const handleEditClick = () => {
-    setEditable(true);
+  const handleEditClick = () => setEditable(true);
+
+  const handleRemoveClick = () => onRemove?.();
+
+  const handlePublishClick = () => {
+    onPublish?.(getComment());
+    resetComment();
+    setEditable(mode === "edit");
   };
-  const handleRemoveClick = () => {
-    alert("remove!");
+
+  const handleCancelClick = () => {
+    resetComment();
+    setEditable(mode === "edit");
   };
 
   return (
@@ -119,7 +104,22 @@ export const CommentCard = ({
                   <span className="small text-gray-700">
                     {commentLength} / {MAX_COMMENT_LENGTH}
                   </span>
-                  <Button leftIcon={<Send />} variant="ghost" size="lg">
+                  {modifying && (
+                    <Button
+                      variant="ghost"
+                      color="tertiary"
+                      size="sm"
+                      onClick={handleCancelClick}
+                    >
+                      {t("cancel")}
+                    </Button>
+                  )}
+                  <Button
+                    leftIcon={<Send />}
+                    variant="ghost"
+                    size="sm"
+                    onClick={handlePublishClick}
+                  >
                     {t("comment.post")}
                   </Button>
                 </div>
@@ -146,7 +146,7 @@ export const CommentCard = ({
 
         {mode !== "print" && !editable && (
           <div>
-            {canEdit && (
+            {onPublish && (
               <Button
                 variant="ghost"
                 color="tertiary"
@@ -156,7 +156,7 @@ export const CommentCard = ({
                 {t("edit")}
               </Button>
             )}
-            {(canEdit || isManager) && (
+            {onRemove && (
               <Button
                 variant="ghost"
                 color="tertiary"
