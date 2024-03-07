@@ -86,7 +86,7 @@ export const CommentCard = ({
   };
 
   return (
-    <div className={clsx("border rounded-3 p-12 d-flex", className)}>
+    <div className={clsx("border rounded-3 p-12 pb-8 d-flex", className)}>
       <Avatar
         alt={t("comment.author.avatar")}
         size="sm"
@@ -126,7 +126,7 @@ export const CommentCard = ({
               </div>
             </div>
           ) : (
-            <div className="ms-2">
+            <div className="ms-4">
               <div className="mb-8 d-flex text-gray-700 small gap-8">
                 <span>{author.username}</span>
                 {badge}
@@ -139,13 +139,13 @@ export const CommentCard = ({
                   </>
                 )}
               </div>
-              <EditorContent editor={editor}></EditorContent>
+              <EditorContent className="mb-4" editor={editor}></EditorContent>
             </div>
           )}
         </div>
 
         {mode !== "print" && !editable && (
-          <div>
+          <div className="ms-4">
             {onPublish && (
               <Button
                 variant="ghost"
