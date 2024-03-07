@@ -7,6 +7,7 @@ import { CommentsHeader } from "~/features/Comments/CommentsHeader";
 import { CommentsList } from "~/features/Comments/CommentsList";
 import { PostContent } from "~/features/Post/PostContent";
 import { PostHeader } from "~/features/Post/PostHeader";
+import { useBlogErrorToast } from "~/hooks/useBlogErrorToast";
 import { PostMetadata } from "~/models/post";
 import { loadPostMetadata } from "~/services/api";
 import {
@@ -14,7 +15,6 @@ import {
   commentListQuery,
   postQuery,
 } from "~/services/queries";
-import { useBlogErrorToast } from "~/utils/BlogEvent";
 
 /** Load a blog post content + comments */
 export const loader =

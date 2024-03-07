@@ -8,8 +8,8 @@ import { createPostActions } from "~/config/createPostActions";
 import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions";
 import { CreatePost } from "~/features/Post/CreatePost";
 import { PostHeader } from "~/features/Post/PostHeader";
+import { useBlogErrorToast } from "~/hooks/useBlogErrorToast";
 import { availableActionsQuery } from "~/services/queries";
-import { useBlogErrorToast } from "~/utils/BlogEvent";
 
 export const loader = (queryClient: QueryClient) => async () => {
   // Preload needed rights

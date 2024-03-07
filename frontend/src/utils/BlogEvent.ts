@@ -1,13 +1,9 @@
-import React, { useEffect, useRef } from "react";
-
-import { useToast } from "@edifice-ui/react";
 import {
   ErrorCode,
   LayerName,
   ERROR_CODE,
   odeServices,
 } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
 
 export interface IBlogError {
   code: ErrorCode;
@@ -15,31 +11,7 @@ export interface IBlogError {
 }
 
 /** Specialize a notification layer dedicated to this application. */
-const BlogLayer = "blog" as LayerName;
-
-/**  */
-export const useBlogErrorToast = () => {
-  const message = useRef<string>();
-  const toast = useToast();
-  const { t } = useTranslation("common");
-
-  useEffect(() => {
-    const subscription = odeServices
-      .notify()
-      .events()
-      .subscribe(BlogLayer, (event: { data?: IBlogError }) => {
-        message.current = t(event?.data?.text ?? "e400");
-        toast.error(
-          React.createElement("div", { children: [message.current] }),
-        );
-      });
-
-    return () => subscription.revoke();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t, toast]);
-
-  return message.current;
-};
+export const BlogLayer = "blog" as LayerName;
 
 /** Function to notify a blog error. */
 export function notifyError(error: IBlogError) {
