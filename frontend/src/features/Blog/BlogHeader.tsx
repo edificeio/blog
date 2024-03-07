@@ -12,8 +12,8 @@ export interface BlogProps {
 export const BlogHeader = ({ blog, print }: BlogProps) => {
   return (
     <AppHeader>
-      <div className="d-flex flex-wrap flex-md-nowrap justify-content-md-between flex-fill gap-12 overflow-hidden">
-        <div className="text-truncate">
+      <div className="d-flex flex-column flex-md-row flex-nowrap justify-content-md-between flex-fill gap-12 overflow-hidden">
+        <div className="overflow-hidden">
           <Breadcrumb
             app={{
               address: basename,
@@ -24,7 +24,10 @@ export const BlogHeader = ({ blog, print }: BlogProps) => {
               name: "",
               scope: [],
             }}
-            name={blog.title}
+            name={
+              blog.title +
+              "qozif jqzoi joqeigjqoei gjqzf jeqpoj gpeoqj  zqoifj fj"
+            }
           />
         </div>
         {!print && <BlogActionBar blog={blog} />}
