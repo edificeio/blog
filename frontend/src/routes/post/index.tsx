@@ -14,6 +14,7 @@ import {
   commentListQuery,
   postQuery,
 } from "~/services/queries";
+import { useBlogErrorToast } from "~/utils/BlogEvent";
 
 /** Load a blog post content + comments */
 export const loader =
@@ -35,6 +36,7 @@ export const loader =
   };
 
 export function Component() {
+  useBlogErrorToast();
   const { blogId, postId } = useParams();
   const postMetadata = useLoaderData() as PostMetadata; // see loader above
   const query = useQuery(postQuery(blogId!, postMetadata));

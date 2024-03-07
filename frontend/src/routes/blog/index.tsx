@@ -20,6 +20,7 @@ import {
   usePostsList,
 } from "~/services/queries";
 import { useStoreUpdaters } from "~/store";
+import { useBlogErrorToast } from "~/utils/BlogEvent";
 
 export const blogLoader =
   (queryClient: QueryClient) =>
@@ -50,6 +51,7 @@ export const blogLoader =
   };
 
 export function Blog() {
+  useBlogErrorToast();
   const { blog } = useBlog();
   const { counters } = useBlogCounter();
   const { setPostPageSize } = useStoreUpdaters();

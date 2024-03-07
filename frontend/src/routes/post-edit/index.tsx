@@ -9,6 +9,7 @@ import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions"
 import { CreatePost } from "~/features/Post/CreatePost";
 import { PostHeader } from "~/features/Post/PostHeader";
 import { availableActionsQuery } from "~/services/queries";
+import { useBlogErrorToast } from "~/utils/BlogEvent";
 
 export const loader = (queryClient: QueryClient) => async () => {
   // Preload needed rights
@@ -18,6 +19,7 @@ export const loader = (queryClient: QueryClient) => async () => {
 };
 
 export function Component() {
+  useBlogErrorToast();
   const { blogId } = useParams();
   const navigate = useNavigate();
   // Check for the right to create a new post
