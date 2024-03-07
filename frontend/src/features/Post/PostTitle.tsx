@@ -21,7 +21,7 @@ import { ActionBarContainer } from "../ActionBar/ActionBarContainer";
 import { PostActions } from "../ActionBar/usePostActions";
 import OldFormatModal from "~/components/OldFormatModal/OldFormatModal";
 import { Post } from "~/models/post";
-import { getAvatarURL, getDatedKey } from "~/utils/PostUtils";
+import { getAvatarURL, getDatedKey, getUserbookURL } from "~/utils/PostUtils";
 
 const ConfirmModal = lazy(
   async () => await import("~/components/ConfirmModal/ConfirmModal"),
@@ -173,6 +173,12 @@ export const PostTitle = ({
           />
           <div className="text-gray-700 small d-flex flex-column flex-md-row">
             <span>{post.author.username}</span>
+            <a
+              href={getUserbookURL(post.author.userId)}
+              className="comment-card-author"
+            >
+              {post.author.username}
+            </a>
             <span className="border border-top-0 border-end-0 border-bottom-0 border-gray-600"></span>
             <span>{getDatedState(post)}</span>
           </div>
