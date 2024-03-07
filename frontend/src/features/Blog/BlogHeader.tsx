@@ -24,10 +24,7 @@ export const BlogHeader = ({ blog, print }: BlogProps) => {
               name: "",
               scope: [],
             }}
-            name={
-              blog.title +
-              "qozif jqzoi joqeigjqoei gjqzf jeqpoj gpeoqj  zqoifj fj"
-            }
+            name={blog.title}
           />
         </div>
         {!print && <BlogActionBar blog={blog} />}

@@ -58,7 +58,6 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   useEffect(() => {
     if (actionBarPostId) {
-      console.log("close");
       setBarOpen(false);
     }
   }, [actionBarPostId]);
@@ -71,7 +70,6 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   const handleOpenMenuClick = () => {
     setActionBarPostId();
-    console.log("open");
     setBarOpen((prev) => !prev);
   };
 
