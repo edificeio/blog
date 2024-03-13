@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { LoadingScreen, Modal } from "@edifice-ui/react";
+import { Button, LoadingScreen, Modal } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 import { baseUrl } from "~/routes";
@@ -28,6 +28,7 @@ export default function OldFormatModal({
       isOpen={isOpen}
       onModalClose={onCancel}
       id={blogId + postId}
+      size="lg"
     >
       <Modal.Header onModalClose={onCancel}>
         {t("post.oldFormat.title", { ns: "blog" })}
@@ -45,6 +46,11 @@ export default function OldFormatModal({
           onLoad={() => setIsLoaded(true)}
         ></iframe>
       </Modal.Body>
+      <Modal.Footer>
+        <Button color="secondary" onClick={onCancel}>
+          {t("close")}
+        </Button>
+      </Modal.Footer>{" "}
     </Modal>
   );
 }
