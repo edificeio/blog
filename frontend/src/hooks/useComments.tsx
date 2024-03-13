@@ -11,6 +11,8 @@ import {
 } from "~/services/queries";
 
 export interface CommentActions {
+  /** Truthy if the user can create a new comment. */
+  canCreate: boolean;
   /** Truthy if the user can edit (and update) the comment. */
   canEdit: (comment: Comment) => boolean;
   /** Truthy if the user can remove the comment. */
@@ -25,7 +27,8 @@ export interface CommentActions {
 
 export const useComments = (blogId: string, postId: string): CommentActions => {
   const { user } = useUser();
-  const { hasRight, manager } = useActionDefinitions(postCommentActions);
+  const { hasRight, manager, comment } =
+    useActionDefinitions(postCommentActions);
 
   const canEdit = (comment: Comment) =>
     comment.author.userId === user?.userId && hasRight(ACTION.COMMENT);
@@ -37,6 +40,7 @@ export const useComments = (blogId: string, postId: string): CommentActions => {
   const updateMutation = useUpdateComment(blogId, postId);
 
   return {
+    canCreate: comment,
     canEdit,
     canRemove,
     create: (content: string) => createMutation.mutate({ content }),

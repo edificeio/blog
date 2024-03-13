@@ -13,12 +13,18 @@ type SpecialPostRights = {
   hasPublishPostRight: boolean;
   hasSubmitPostRight: boolean;
 };
-type SharedRoles = { read: boolean; contrib: boolean; manager: boolean };
+type SharedRoles = {
+  read: boolean;
+  contrib: boolean;
+  manager: boolean;
+  comment: boolean;
+};
 type SharedRight = {
   "org-entcore-blog-controllers-PostController|list": boolean;
   "org-entcore-blog-controllers-PostController|submit": boolean;
   "org-entcore-blog-controllers-PostController|publish": boolean;
   "org-entcore-blog-controllers-BlogController|shareResource": boolean;
+  "org-entcore-blog-controllers-PostController|comment": boolean;
 };
 
 /**
@@ -44,6 +50,7 @@ export const useActionDefinitions = (
       read: false,
       contrib: false,
       manager: false,
+      comment: false,
       hasPublishPostRight: false,
       hasSubmitPostRight: false,
     };
@@ -77,6 +84,8 @@ export const useActionDefinitions = (
             current[
               "org-entcore-blog-controllers-BlogController|shareResource"
             ];
+          previous.comment ||=
+            current["org-entcore-blog-controllers-PostController|comment"];
 
           // Also look for the real publish/submit URL to use.
           // If both are acceptable, prefer publish over submit.
