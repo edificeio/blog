@@ -128,7 +128,7 @@ export const CommentCard = ({
             </div>
           ) : (
             <div className="ms-4">
-              <div className="mb-8 d-flex text-gray-700 small gap-8">
+              <div className="mb-8 d-flex flex-column flex-md-row text-gray-700 small column-gap-12 align-items-md-center">
                 <a
                   href={getUserbookURL(author.userId)}
                   className="comment-card-author"
@@ -138,7 +138,7 @@ export const CommentCard = ({
                 {badge}
                 {created && (
                   <>
-                    <span className="d-none d-md-block mx-4 d-none d-md-block mx-4 border border-top-0 border-end-0 border-bottom-0 border-gray-600"></span>
+                    <span className="separator d-none d-md-block"></span>
                     <span>
                       {t("comment.publish.date", { date: fromNow(created) })}
                     </span>
