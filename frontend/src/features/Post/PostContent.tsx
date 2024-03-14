@@ -190,7 +190,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
       {mode === "read" && (
         <div className="mx-md-8 mt-24">
           <CommentsHeader comments={comments ?? []} />
-          <CommentsCreate comments={comments ?? []} />
+          <CommentsCreate />
           <CommentsList comments={comments ?? []} />
         </div>
       )}

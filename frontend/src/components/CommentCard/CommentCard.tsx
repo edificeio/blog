@@ -86,8 +86,12 @@ export const CommentCard = ({
     setEditable(mode === "edit");
   };
 
+  const cssClasses = clsx("border rounded-3 p-12 pb-8 d-flex", className, {
+    "bg-gray-200": mode === "edit",
+  });
+
   return (
-    <div className={clsx("border rounded-3 p-12 pb-8 d-flex", className)}>
+    <div className={cssClasses}>
       <Avatar
         alt={t("comment.author.avatar")}
         size="sm"
