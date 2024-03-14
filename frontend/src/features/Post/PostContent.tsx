@@ -11,6 +11,7 @@ import { usePostActions } from "../ActionBar/usePostActions";
 import { CommentsCreate } from "../Comments/CommentsCreate";
 import { CommentsHeader } from "../Comments/CommentsHeader";
 import { CommentsList } from "../Comments/CommentsList";
+import { ButtonsGroup } from "~/components/ButtonsGroup/ButtonsGroup";
 import OldFormatModal from "~/components/OldFormatModal/OldFormatModal";
 import { postContentActions } from "~/config/postContentActions";
 import { Comment } from "~/models/comment";
@@ -59,7 +60,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
   // Handlers for actions triggered from the post title component.
   const postActionsHandlers = {
     onBackward: () => {
-      navigate(-1);
+      navigate(`../..`, { relative: "path" });
     },
     onDelete: () => {
       trash();
@@ -160,7 +161,10 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
           variant={variant}
         ></Editor>
         {mode === "edit" && (
-          <div className="d-flex gap-8 justify-content-end my-8 sticky-bottom py-8 bg-white">
+          <ButtonsGroup
+            className="gap-8 my-8 sticky-bottom py-8 bg-white"
+            variant="reverse"
+          >
             <Button type="button" variant="ghost" onClick={handleCancelClick}>
               {t("cancel")}
             </Button>
@@ -179,7 +183,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
             >
               {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
             </Button>
-          </div>
+          </ButtonsGroup>
         )}
       </div>
 

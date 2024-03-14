@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { ID, IUserDescription } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 
+import { ButtonsGroup } from "../ButtonsGroup/ButtonsGroup";
 import { getAvatarURL, getUserbookURL } from "~/utils/PostUtils";
 
 const MAX_COMMENT_LENGTH = 800;
@@ -100,7 +101,7 @@ export const CommentCard = ({
               <div>{t("comment.placeholder")}</div>
               <div className="border rounded-3 px-16 pt-12 pb-8 d-flex gap-2 flex-column bg-white">
                 <EditorContent editor={editor}></EditorContent>
-                <div className="d-flex gap-12 justify-content-end align-items-center">
+                <ButtonsGroup className="gap-12" variant="reverse">
                   <span className="small text-gray-700">
                     {commentLength} / {MAX_COMMENT_LENGTH}
                   </span>
@@ -122,7 +123,7 @@ export const CommentCard = ({
                   >
                     {t("comment.post")}
                   </Button>
-                </div>
+                </ButtonsGroup>
               </div>
             </div>
           ) : (
