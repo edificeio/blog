@@ -11,7 +11,7 @@ import { usePostActions } from "../ActionBar/usePostActions";
 import { CommentsCreate } from "../Comments/CommentsCreate";
 import { CommentsHeader } from "../Comments/CommentsHeader";
 import { CommentsList } from "../Comments/CommentsList";
-import { ButtonsGroup } from "~/components/ButtonsGroup/ButtonsGroup";
+import { ButtonGroup } from "~/components/ButtonGroup/ButtonGroup";
 import OldFormatModal from "~/components/OldFormatModal/OldFormatModal";
 import { postContentActions } from "~/config/postContentActions";
 import { Comment } from "~/models/comment";
@@ -161,7 +161,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
           variant={variant}
         ></Editor>
         {mode === "edit" && (
-          <ButtonsGroup
+          <ButtonGroup
             className="gap-8 my-8 sticky-bottom py-8 bg-white"
             variant="reverse"
           >
@@ -183,7 +183,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
             >
               {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
             </Button>
-          </ButtonsGroup>
+          </ButtonGroup>
         )}
       </div>
 

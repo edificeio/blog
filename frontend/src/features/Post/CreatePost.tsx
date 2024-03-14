@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { useActionDefinitions } from "../ActionBar/useActionDefinitions";
-import { ButtonsGroup } from "~/components/ButtonsGroup/ButtonsGroup";
+import { ButtonGroup } from "~/components/ButtonGroup/ButtonGroup";
 import { useCreatePost, usePublishPost } from "~/services/queries";
 
 export interface CreatePostProps {
@@ -69,7 +69,7 @@ export const CreatePost = ({ blogId }: CreatePostProps) => {
       <div className="mx-md-16">
         <Editor ref={editorRef} content="" mode="edit"></Editor>
       </div>
-      <ButtonsGroup className="gap-8 mt-16 mx-md-16" variant="reverse">
+      <ButtonGroup className="gap-8 mt-16 mx-md-16" variant="reverse">
         <Button type="button" variant="ghost" onClick={handleCancelClick}>
           {t("cancel")}
         </Button>
@@ -84,7 +84,7 @@ export const CreatePost = ({ blogId }: CreatePostProps) => {
         <Button type="button" leftIcon={<Send />} onClick={handlePublishClick}>
           {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
         </Button>
-      </ButtonsGroup>
+      </ButtonGroup>
     </div>
   );
 };

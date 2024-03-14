@@ -7,7 +7,7 @@ import { ACTION, ActionType } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { ButtonsGroup } from "~/components/ButtonsGroup/ButtonsGroup";
+import { ButtonGroup } from "~/components/ButtonGroup/ButtonGroup";
 import { ActionBarContainer } from "~/features/ActionBar/ActionBarContainer";
 import { useBlogActions } from "~/features/ActionBar/useBlogActions";
 import { Blog } from "~/models/blog";
@@ -137,7 +137,7 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
 
   return (
     <>
-      <ButtonsGroup className="gap-12 align-self-end">
+      <ButtonGroup className="gap-12 align-self-end">
         {canContrib && (
           <Button
             leftIcon={<Plus />}
@@ -213,7 +213,7 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
             <></>
           )}
         </ActionBarContainer>
-      </ButtonsGroup>
+      </ButtonGroup>
 
       <Suspense>
         {isUpdateModalOpen && (

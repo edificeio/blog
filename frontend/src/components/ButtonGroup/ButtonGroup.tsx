@@ -1,16 +1,16 @@
 import clsx from "clsx";
 
-export interface ButtonsGroupProps {
+export interface ButtonGroupProps {
   className?: string;
   children: Array<JSX.Element | false>;
   variant?: "reverse";
 }
 
-export const ButtonsGroup = ({
+export const ButtonGroup = ({
   className,
   variant,
   children,
-}: ButtonsGroupProps) => {
+}: ButtonGroupProps) => {
   const classes = clsx(
     "d-flex flex-fill align-items-center justify-content-end",
     className,
