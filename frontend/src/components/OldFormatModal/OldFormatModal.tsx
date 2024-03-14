@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Button, LoadingScreen, Modal } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,7 @@ export default function OldFormatModal({
       viewport
       isOpen={isOpen}
       onModalClose={onCancel}
-      id={blogId + postId}
+      id={useId()}
       size="lg"
     >
       <Modal.Header onModalClose={onCancel}>
@@ -50,7 +50,7 @@ export default function OldFormatModal({
         <Button color="secondary" onClick={onCancel}>
           {t("close")}
         </Button>
-      </Modal.Footer>{" "}
+      </Modal.Footer>
     </Modal>
   );
 }
