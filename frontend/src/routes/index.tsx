@@ -23,7 +23,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
         // TODO remove cast as any when ode-explorer is fixed
         element: <Explorer config={explorerConfig as any} />,
       },
-      // View is the page containing the blog view with all information about the blog and a list of posts
+      // This page displays all information about the blog and its list of posts.
       {
         path: "id/:blogId",
         async lazy() {
@@ -34,7 +34,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
           };
         },
       },
-      // Post is the page containing a specific post from a blog
+      // This page displays a new blank post in edit mode, for a blog.
       {
         path: "id/:blogId/post/edit",
         async lazy() {
@@ -45,7 +45,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
           };
         },
       },
-      // Post is the page containing a specific post from a blog
+      // This page displays an existing post from a blog.
       {
         path: "id/:blogId/post/:postId",
         async lazy() {
@@ -59,6 +59,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
     ],
     errorElement: <PageError />,
   },
+  // This page allows printing a blog.
   {
     path: "/print/:blogId",
     async lazy() {
@@ -71,6 +72,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
       };
     },
   },
+  // This page allows printing a post from a blog.
   {
     path: "/print/:blogId/post/:postId",
     async lazy() {
@@ -83,6 +85,19 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
       };
     },
   },
+  // This page displays a public blog.
+  {
+    path: "/pub/:slug",
+    async lazy() {
+      const { Component, loader } = await import("~/routes/blog-public");
+      return {
+        loader: loader(queryClient),
+        Component,
+      };
+    },
+    errorElement: <PageError />,
+  },
+  // This page displays an existing post from a blog.
   {
     path: "/oldformat/:blogId/:postId",
     async lazy() {
