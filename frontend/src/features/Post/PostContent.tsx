@@ -187,11 +187,11 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
         )}
       </div>
 
-      {mode === "read" && (
+      {mode === "read" && !!comments && (
         <div className="mx-md-8 mt-24">
-          <CommentsHeader comments={comments ?? []} />
+          <CommentsHeader comments={comments} />
           <CommentsCreate />
-          <CommentsList comments={comments ?? []} />
+          <CommentsList comments={comments} />
         </div>
       )}
       <Suspense>

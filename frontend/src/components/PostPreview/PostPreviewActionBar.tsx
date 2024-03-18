@@ -30,12 +30,17 @@ export interface PostPreviewActionBarProps {
    * Index of the post in the list of posts.
    */
   index: number;
+  /**
+   * Truthy when the post is public.
+   */
+  isPublic?: boolean;
 }
 
 export const PostPreviewActionBar = ({
   blog: blog,
   post,
   index,
+  isPublic,
 }: PostPreviewActionBarProps) => {
   // Get available actions and requirements for the post.
   const postActions = usePostActions(postContentActions, blog._id, post);
@@ -81,30 +86,24 @@ export const PostPreviewActionBar = ({
   return (
     <>
       <ActionBarContainer visible={actionBarPostId === post._id}>
-        {isActionAvailable(ACTION.OPEN) ? (
+        {isActionAvailable(ACTION.OPEN) && (
           <Button type="button" variant="filled" onClick={handleEditClick}>
             {t("blog.edit.post")}
           </Button>
-        ) : (
-          <></>
         )}
         {post.state !== PostState.PUBLISHED &&
-        isActionAvailable(ACTION.PUBLISH) ? (
-          <Button type="button" variant="filled" onClick={handlePublishClick}>
-            {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
-          </Button>
-        ) : (
-          <></>
-        )}
+          isActionAvailable(ACTION.PUBLISH) && (
+            <Button type="button" variant="filled" onClick={handlePublishClick}>
+              {mustSubmit ? t("blog.submitPost") : t("blog.publish")}
+            </Button>
+          )}
         {post.state === PostState.PUBLISHED &&
-        isActionAvailable(ACTION.MOVE) &&
-        index > 0 ? (
-          <Button type="button" variant="filled" onClick={goUp}>
-            {t("goUp")}
-          </Button>
-        ) : (
-          <></>
-        )}
+          isActionAvailable(ACTION.MOVE) &&
+          index > 0 && (
+            <Button type="button" variant="filled" onClick={goUp}>
+              {t("goUp")}
+            </Button>
+          )}
         <Button
           type="button"
           color="primary"
@@ -113,14 +112,16 @@ export const PostPreviewActionBar = ({
         >
           {t("blog.print")}
         </Button>
-        <Button
-          type="button"
-          color="primary"
-          variant="filled"
-          onClick={() => toogleDeleteModalOpen(true)}
-        >
-          {t("blog.delete.post")}
-        </Button>
+        {!isPublic && (
+          <Button
+            type="button"
+            color="primary"
+            variant="filled"
+            onClick={() => toogleDeleteModalOpen(true)}
+          >
+            {t("blog.delete.post")}
+          </Button>
+        )}
       </ActionBarContainer>
 
       <Suspense>

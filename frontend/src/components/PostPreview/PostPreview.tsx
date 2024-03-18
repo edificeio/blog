@@ -32,9 +32,13 @@ export type PostPreviewProps = {
    * Index of the post in the list
    */
   index: number;
+  /**
+   * Truthy when the post is public.
+   */
+  isPublic?: boolean;
 };
 
-export const PostPreview = ({ post, index }: PostPreviewProps) => {
+export const PostPreview = ({ post, index, isPublic }: PostPreviewProps) => {
   const { fromNow } = useDate();
   const { t } = useTranslation("blog");
   const navigate = useNavigate();
@@ -42,8 +46,7 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
   const { blog } = useBlog();
   const { contrib, manager, creator } = useActionDefinitions([]);
   const { setActionBarPostId } = useStoreUpdaters();
-  const { sidebarHighlightedPost } = useBlogState();
-  const { actionBarPostId } = useBlogState();
+  const { sidebarHighlightedPost, actionBarPostId } = useBlogState();
 
   const editorRef = useRef<EditorRef>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -232,10 +235,12 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex gap-12 small text-gray-700 align-items-center ">
-                <div className="d-flex align-items-center gap-8">
-                  <span>{post.nbComments}</span>
-                  <MessageInfo />
-                </div>
+                {typeof post.nbComments === "number" && (
+                  <div className="d-flex align-items-center gap-8">
+                    <span>{post.nbComments}</span>
+                    <MessageInfo />
+                  </div>
+                )}
               </div>
               <div>
                 <Button
@@ -255,6 +260,7 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
           post={post}
           blog={blog}
           index={index}
+          isPublic={isPublic}
         ></PostPreviewActionBar>
       )}
     </>
