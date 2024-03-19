@@ -13,7 +13,7 @@ import { Post, PostState } from "~/models/post";
 import { baseUrl } from "~/routes";
 import { useBlogState, useStoreUpdaters } from "~/store";
 
-const DeleteModal = lazy(
+const ConfirmModal = lazy(
   async () => await import("~/components/ConfirmModal/ConfirmModal"),
 );
 
@@ -44,7 +44,8 @@ export const PostPreviewActionBar = ({
   const { t } = useTranslation("blog");
   const navigate = useNavigate();
 
-  const [isDeleteModalOpen, toogleDeleteModalOpen] = useToggle();
+  const [isDeleteModalOpen, toggleDeleteModalOpen] = useToggle();
+  const [isGoUpModalOpen, toggleGoUpModalOpen] = useToggle();
 
   const { setActionBarPostId } = useStoreUpdaters();
   const { actionBarPostId } = useBlogState();
@@ -70,11 +71,20 @@ export const PostPreviewActionBar = ({
 
   const handleDeleteSuccess = () => {
     trash();
-    toogleDeleteModalOpen(false);
+    toggleDeleteModalOpen(false);
   };
 
   const handleDeleteClose = () => {
-    toogleDeleteModalOpen(false);
+    toggleDeleteModalOpen(false);
+  };
+
+  const handleGoUpSuccess = () => {
+    goUp();
+    toggleGoUpModalOpen(false);
+  };
+
+  const handleGoUpClose = () => {
+    toggleGoUpModalOpen(false);
   };
 
   return (
@@ -94,7 +104,11 @@ export const PostPreviewActionBar = ({
         {post.state === PostState.PUBLISHED &&
           isActionAvailable(ACTION.MOVE) &&
           index > 0 && (
-            <Button type="button" variant="filled" onClick={goUp}>
+            <Button
+              type="button"
+              variant="filled"
+              onClick={() => toggleGoUpModalOpen()}
+            >
               {t("goUp")}
             </Button>
           )}
@@ -111,7 +125,7 @@ export const PostPreviewActionBar = ({
             type="button"
             color="primary"
             variant="filled"
-            onClick={() => toogleDeleteModalOpen(true)}
+            onClick={() => toggleDeleteModalOpen(true)}
           >
             {t("blog.delete.post")}
           </Button>
@@ -120,13 +134,23 @@ export const PostPreviewActionBar = ({
 
       <Suspense>
         {isDeleteModalOpen && (
-          <DeleteModal
+          <ConfirmModal
             id="confirmDeleteModal"
             isOpen={isDeleteModalOpen}
             header={<>{t("blog.delete.post")}</>}
             body={<p className="body">{t("confirm.remove.post")}</p>}
             onSuccess={handleDeleteSuccess}
             onCancel={handleDeleteClose}
+          />
+        )}
+        {isGoUpModalOpen && (
+          <ConfirmModal
+            id="confirmGoUpModal"
+            isOpen={isGoUpModalOpen}
+            header={<>{t("goUp")}</>}
+            body={<p className="body">{t("confirm.up.post")}</p>}
+            onSuccess={handleGoUpSuccess}
+            onCancel={handleGoUpClose}
           />
         )}
       </Suspense>

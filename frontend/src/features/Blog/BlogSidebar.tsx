@@ -59,7 +59,7 @@ const BlogSidebar = ({ state }: BlogSidebarProps) => {
             list={posts.map((post) => ({
               id: post._id,
               title: post.title,
-              date: post.modified?.$date,
+              date: post.modified,
             }))}
             onClick={(item) => handleOnClick(item.id)}
           />
