@@ -128,7 +128,12 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
   };
 
   const handlePrintClick = () => {
-    window.open(`${baseUrl}/print/${blog._id}`, "_blank");
+    if (blog.slug) {
+      // Public print
+      window.open(`${baseUrl}/pub/${blog.slug}/print`, "_blank");
+    } else {
+      window.open(`${baseUrl}/print/${blog._id}`, "_blank");
+    }
   };
 
   function isActionAvailable(action: ActionType) {

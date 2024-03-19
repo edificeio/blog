@@ -30,20 +30,15 @@ export interface PostPreviewActionBarProps {
    * Index of the post in the list of posts.
    */
   index: number;
-  /**
-   * Truthy when the post is public.
-   */
-  isPublic?: boolean;
 }
 
 export const PostPreviewActionBar = ({
-  blog: blog,
+  blog: { _id: blogId, slug, visibility },
   post,
   index,
-  isPublic,
 }: PostPreviewActionBarProps) => {
   // Get available actions and requirements for the post.
-  const postActions = usePostActions(postContentActions, blog._id, post);
+  const postActions = usePostActions(postContentActions, blogId, post);
   const { mustSubmit, isActionAvailable, goUp, publish, trash } = postActions;
 
   const { t } = useTranslation("blog");
@@ -54,18 +49,17 @@ export const PostPreviewActionBar = ({
   const { setActionBarPostId } = useStoreUpdaters();
   const { actionBarPostId } = useBlogState();
 
+  const isPublic = visibility === "PUBLIC";
+
   const handleEditClick = () => {
-    navigate(`/id/${blog._id}/post/${post._id}?edit=true`);
+    navigate(`/id/${blogId}/post/${post._id}?edit=true`);
   };
 
   const handlePrintClick = () => {
-    if (blog.visibility === "PUBLIC") {
-      window.open(
-        `${baseUrl}/pub/print/${blog._id}/post/${post._id}`,
-        "_blank",
-      );
+    if (isPublic) {
+      window.open(`${baseUrl}/pub/${slug}/print/post/${post._id}`, "_blank");
     } else {
-      window.open(`${baseUrl}/print/${blog._id}/post/${post._id}`, "_blank");
+      window.open(`${baseUrl}/print/${blogId}/post/${post._id}`, "_blank");
     }
   };
 

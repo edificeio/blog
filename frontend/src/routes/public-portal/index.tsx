@@ -5,7 +5,6 @@ import { QueryClient } from "@tanstack/react-query";
 import { LoaderFunctionArgs, Outlet } from "react-router-dom";
 
 import { blogActions } from "~/config/blogActions";
-import { BlogHeader } from "~/features/Blog/BlogHeader";
 import { useBlogErrorToast } from "~/hooks/useBlogErrorToast";
 import { PostState } from "~/models/post";
 import {
@@ -72,10 +71,5 @@ export function Component() {
 
   if (!blog) return <LoadingScreen />;
 
-  return (
-    <main className="container-fluid d-flex flex-column bg-white">
-      <BlogHeader blog={blog} />
-      <Outlet></Outlet>
-    </main>
-  );
+  return <Outlet></Outlet>;
 }

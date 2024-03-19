@@ -32,13 +32,9 @@ export type PostPreviewProps = {
    * Index of the post in the list
    */
   index: number;
-  /**
-   * Truthy when the post is public.
-   */
-  isPublic?: boolean;
 };
 
-export const PostPreview = ({ post, index, isPublic }: PostPreviewProps) => {
+export const PostPreview = ({ post, index }: PostPreviewProps) => {
   const { fromNow } = useDate();
   const { t } = useTranslation("blog");
   const navigate = useNavigate();
@@ -260,7 +256,6 @@ export const PostPreview = ({ post, index, isPublic }: PostPreviewProps) => {
           post={post}
           blog={blog}
           index={index}
-          isPublic={isPublic}
         ></PostPreviewActionBar>
       )}
     </>

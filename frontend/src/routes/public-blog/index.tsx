@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { LoadingScreen } from "@edifice-ui/react";
 
+import { BlogHeader } from "~/features/Blog/BlogHeader";
 import BlogPostList from "~/features/Blog/BlogPostList";
 import BlogSidebar from "~/features/Blog/BlogSidebar";
 import { PostState } from "~/models/post";
@@ -39,11 +40,14 @@ export function Component() {
   if (!blog) return <LoadingScreen />;
 
   return (
-    <div className="d-flex flex-fill">
-      <BlogSidebar isPublic={true} />
-      <div className="flex-fill py-16 ps-md-16 d-flex flex-column">
-        <BlogPostList blogId={blog?._id} isPublic={true} />
+    <main className="container-fluid d-flex flex-column bg-white">
+      <BlogHeader blog={blog} />
+      <div className="d-flex flex-fill">
+        <BlogSidebar />
+        <div className="flex-fill py-16 ps-md-16 d-flex flex-column">
+          <BlogPostList blogId={blog?._id} isPublic={true} />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

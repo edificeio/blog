@@ -107,11 +107,31 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
           };
         },
       },
+      // This page prints a public blog.
+      {
+        path: "print",
+        async lazy() {
+          const { Component } = await import("~/routes/public-blog-print");
+          return {
+            Component,
+          };
+        },
+      },
       // This page displays an existing post from a public blog.
       {
         path: "post/:postId",
         async lazy() {
           const { Component } = await import("~/routes/public-post");
+          return {
+            Component,
+          };
+        },
+      },
+      // This page prints an existing post from a public blog.
+      {
+        path: "print/post/:postId",
+        async lazy() {
+          const { Component } = await import("~/routes/public-post-print");
           return {
             Component,
           };

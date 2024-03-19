@@ -87,12 +87,7 @@ const BlogPostList = ({ blogId, isPublic }: BlogPostListProps) => {
         </div>
       )}
       {posts?.map((post, index) => (
-        <PostPreview
-          key={post._id}
-          post={post}
-          index={index}
-          isPublic={isPublic}
-        />
+        <PostPreview key={post._id} post={post} index={index} />
       ))}
       {hasNextPage && (
         <div className="d-flex justify-content-center">
