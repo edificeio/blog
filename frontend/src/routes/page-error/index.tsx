@@ -1,6 +1,6 @@
 import { Button, EmptyScreen, Layout, usePaths } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
-import { useRouteError } from "react-router-dom";
+import { useNavigate, useRouteError } from "react-router-dom";
 
 export default function PageError() {
   const error = useRouteError();
@@ -9,6 +9,9 @@ export default function PageError() {
   const { t } = useTranslation();
 
   const [imagePath] = usePaths();
+
+  const navigate = useNavigate();
+  const handleBackClick = () => navigate(-1);
 
   return (
     <Layout>
@@ -21,12 +24,7 @@ export default function PageError() {
             ns: "blog",
           })}
         />
-        <Button
-          color="primary"
-          onClick={() => {
-            window.location.href = "/blog";
-          }}
-        >
+        <Button color="primary" onClick={handleBackClick}>
           {t("back")}
         </Button>
       </div>

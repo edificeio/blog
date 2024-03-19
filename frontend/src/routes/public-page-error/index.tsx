@@ -1,6 +1,6 @@
 import { Button, EmptyScreen, usePaths } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
-import { useRouteError } from "react-router-dom";
+import { useNavigate, useRouteError } from "react-router-dom";
 
 export default function PublicPageError() {
   const error = useRouteError();
@@ -9,6 +9,9 @@ export default function PublicPageError() {
   const { t } = useTranslation();
 
   const [imagePath] = usePaths();
+
+  const navigate = useNavigate();
+  const handleBackClick = () => navigate(-1);
 
   return (
     <main className="container-fluid d-flex flex-column bg-white">
@@ -21,12 +24,7 @@ export default function PublicPageError() {
             ns: "blog",
           })}
         />
-        <Button
-          color="primary"
-          onClick={() => {
-            window.location.href = "/blog";
-          }}
-        >
+        <Button color="primary" onClick={handleBackClick}>
           {t("back")}
         </Button>
       </div>
