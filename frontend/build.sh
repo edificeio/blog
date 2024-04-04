@@ -79,25 +79,25 @@ doInit () {
       echo "[init] Get branch name from git..."
       BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
     fi
+  fi
 
-    echo "[init] Generate package.json from package.json.template..."
-    NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
-    cp package.json.template package.json
-    sed -i "s/%branch%/${BRANCH_NAME}/" package.json
-    sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
+  echo "[init] Generate package.json from package.json.template..."
+  NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
+  cp package.json.template package.json
+  sed -i "s/%branch%/${BRANCH_NAME}/" package.json
+  sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
 
-    if [ "$1" == "Dev" ]
-    then
-      sed -i "s/%packageVersion%/link:..\/..\/edifice-ts-client\//" package.json
-    else
-      sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
-    fi
+  if [ "$1" == "Dev" ]
+  then
+    sed -i "s/%packageVersion%/link:..\/..\/edifice-ts-client\//" package.json
+  else
+    sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
+  fi
 
-    if [ "$NO_DOCKER" = "true" ] ; then
-      pnpm install
-    else
-      docker-compose run -e NPM_TOKEN -e TIPTAP_PRO_TOKEN --rm $USER_OPTION node sh -c "pnpm install"
-    fi
+  if [ "$NO_DOCKER" = "true" ] ; then
+    pnpm install
+  else
+    docker-compose run -e NPM_TOKEN -e TIPTAP_PRO_TOKEN --rm $USER_OPTION node sh -c "pnpm install"
   fi
 
 }
