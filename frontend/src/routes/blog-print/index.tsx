@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { Editor } from "@edifice-ui/editor";
-import { LoadingScreen } from "@edifice-ui/react";
+import { LoadingScreen, useTrashedResource } from "@edifice-ui/react";
 import { QueryClient } from "@tanstack/react-query";
 import { ACTION } from "edifice-ts-client";
 import { LoaderFunctionArgs } from "react-router-dom";
@@ -43,6 +43,8 @@ export const blogPrintLoader =
 
 export function BlogPrint() {
   const { blog } = useBlog();
+  useTrashedResource(blog?._id);
+
   const { hasRight } = useActionDefinitions(blogActions);
 
   const {
