@@ -25,6 +25,7 @@ package org.entcore.blog;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.transformer.IContentTransformerClient;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -63,8 +64,8 @@ public class Blog extends BaseServer {
     private MessageConsumer<Object> audienceRightChecker;
 
     @Override
-    public void start() throws Exception {
-        super.start();
+    public void start(Promise<Void> startPromise) throws Exception {
+        super.start(startPromise);
         setDefaultResourceFilter(new BlogResourcesProvider());
 
         MongoDbConf.getInstance().setCollection("blogs");

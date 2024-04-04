@@ -39,6 +39,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -197,7 +198,7 @@ public class BlogController extends BaseController {
 					if(visibility==null || "".equals(visibility)){
 						blog.update(user, blogId, data, defaultResponseHandler(request));
 					}else{
-						changeResourcesVisibility(blogId, data, user, visibility, request).setHandler(res->{
+						changeResourcesVisibility(blogId, data, user, visibility, request).onComplete(res->{
 							blog.update(user, blogId, data, defaultResponseHandler(request));
 						});
 					}
@@ -650,7 +651,7 @@ public class BlogController extends BaseController {
 				}
 				getUserInfos(eb, request, user -> {
 					if (user != null) {
-						changeLogoVisibilityIfNeeded(data, VisibilityFilter.PUBLIC.name()).setHandler(res-> {
+						changeLogoVisibilityIfNeeded(data, VisibilityFilter.PUBLIC.name()).onComplete(res-> {
 							final Handler<Either<String,JsonObject>> handler = eventHelper.onCreateResource(request, PUBLIC_RESOURCE_NAME, defaultResponseHandler(request));
 							blog.create(data, user, true, handler);
 						});
@@ -681,7 +682,7 @@ public class BlogController extends BaseController {
 				getUserInfos(eb, request,  user -> {
 					if (user != null) {
 						String visibility = data.getString("visibility");
-						changeResourcesVisibility(blogId,data, user, visibility, request).setHandler(res->{
+						changeResourcesVisibility(blogId,data, user, visibility, request).onComplete(res->{
 							blog.update(user, blogId, data, defaultResponseHandler(request));
 						});
 					} else {
@@ -704,16 +705,16 @@ public class BlogController extends BaseController {
 			return Future.succeededFuture(blog);
 		}
 		//
-		Future<JsonObject> future = Future.future();
+		Promise<JsonObject> promise = Promise.promise();
 		JsonObject j = new JsonObject()
 				.put("action", "changeVisibility")
 				.put("visibility", visibility)
 				.put("documentIds", new JsonArray(ids));
-		eb.send("org.entcore.workspace", j, r -> {
+		eb.request("org.entcore.workspace", j, r -> {
 			blog.put("thumbnail", newUrl);
-			future.complete(blog);
+			promise.complete(blog);
 		});
-		return future;
+		return promise.future();
 	}
 
 	private Future<JsonArray> changeResourcesVisibility(String blogId, JsonObject data, UserInfos user, String visibility,
@@ -721,16 +722,16 @@ public class BlogController extends BaseController {
 		final VisibilityFilter eVisibility = VisibilityFilter.valueOf(visibility);
 		final VisibilityFilter inverse = eVisibility.equals(VisibilityFilter.PUBLIC)?VisibilityFilter.OWNER:VisibilityFilter.PUBLIC;
 		//get old version of blog
-		Future<JsonObject> futureBlog = Future.future();
+		Promise<JsonObject> promiseBlog = Promise.promise();
 		blog.get(blogId,res->{
 			if(res.isRight()){
-				futureBlog.complete(res.right().getValue());
+				promiseBlog.complete(res.right().getValue());
 			}else{
-				futureBlog.fail(res.left().getValue());
+				promiseBlog.fail(res.left().getValue());
 			}
 		});
 		//check if visibility has changed
-		return futureBlog.map(blog->{
+		return promiseBlog.future().map(blog->{
 			String oldVisibility = blog.getString("visibility","");
 			if(oldVisibility.equals(visibility)){
 				//nothing to change
@@ -745,38 +746,38 @@ public class BlogController extends BaseController {
 				return Future.succeededFuture(changed);
 			}
 			//
-			Future<Boolean> future = Future.future();
+			Promise<Boolean> promise = Promise.promise();
 			JsonObject j = new JsonObject()
 					.put("action", "changeVisibility")
 					.put("visibility", visibility)
 					.put("documentIds", new JsonArray(ids));
-			eb.send("org.entcore.workspace", j, r -> {
+			eb.request("org.entcore.workspace", j, r -> {
 				data.put("thumbnail", ResourceUtils.transformUrlTo(icon,ids,eVisibility));
-				future.complete(changed);
+				promise.complete(changed);
 			});
-			return future;
+			return promise.future();
 		})//fetch post
 		.compose(changed ->{
 			if(!changed){
 				return Future.succeededFuture(new JsonArray());
 			}
-			Future<JsonArray> futureList = Future.future();
+			Promise<JsonArray> promiseList = Promise.promise();
 			//fetch posts
 			postService.list(blogId, user, null, 0, "", null, new PostProjection(true, true, false), event -> {
 				if (event.isRight()) {
 					JsonArray posts = event.right().getValue();
-					futureList.complete(posts);
+					promiseList.complete(posts);
 				}else{
-					futureList.fail(event.left().getValue());
+					promiseList.fail(event.left().getValue());
 				}
 			}, request);
-			return futureList;
+			return promiseList.future();
 		})//transform content
 		.compose(posts -> {
 			if(posts.isEmpty()){
 				return Future.succeededFuture(new ArrayList<JsonObject>());
 			}
-			Future<List<JsonObject>> postToSave = Future.future();
+			Promise<List<JsonObject>> postToSave = Promise.promise();
 			Map<String, JsonObject> postByIds = new HashMap<>();
 			Map<String, List<String>> idsByPost = new HashMap<>();
 			List<String> allIds = new ArrayList<>();
@@ -796,7 +797,7 @@ public class BlogController extends BaseController {
 					.put("visibility", visibility)
 					.put("documentIds", new JsonArray(allIds));
 			if(allIds.size()>0){
-				eb.send("org.entcore.workspace", j, r -> {
+				eb.request("org.entcore.workspace", j, r -> {
 					List<JsonObject> toSave = new ArrayList<>(postByIds.values());
 					for(String postId : postByIds.keySet()){
 						JsonObject post = postByIds.get(postId);
@@ -810,21 +811,21 @@ public class BlogController extends BaseController {
 			}else{
 				postToSave.complete(new ArrayList<>());
 			}
-			return postToSave;
+			return postToSave.future();
 		})//save post content
 		.compose(postsToSave->{
 			if(postsToSave.isEmpty()){
 				return Future.succeededFuture(new JsonArray());
 			}
-			Future<JsonArray> future = Future.future();
+			Promise<JsonArray> promise = Promise.promise();
 			postService.updateAllContents(user, postsToSave, res->{
 				if(res.isRight()){
-					future.complete(res.right().getValue());
+					promise.complete(res.right().getValue());
 				}else{
-					future.fail(res.left().getValue());
+					promise.fail(res.left().getValue());
 				}
 			});
-			return future;
+			return promise.future();
 		});
 	}
 
