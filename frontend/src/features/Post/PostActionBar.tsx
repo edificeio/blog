@@ -49,11 +49,11 @@ export const PostActionBar = ({
   return (
     <>
       {isMainActionEdit ? (
-        <Button leftIcon={<Edit />} onClick={onEdit}>
+        <Button leftIcon={<Edit />} disabled={isMutating} onClick={onEdit}>
           {common_t("edit")}
         </Button>
       ) : (
-        <Button leftIcon={<Send />} onClick={onPublish}>
+        <Button leftIcon={<Send />} disabled={isMutating} onClick={onPublish}>
           {t("blog.publish")}
         </Button>
       )}
@@ -103,6 +103,7 @@ export const PostActionBar = ({
           type="button"
           color="primary"
           variant="filled"
+          disabled={isMutating}
           onClick={() => setConfirmDeleteModal(true)}
         >
           {t("blog.delete.post")}
