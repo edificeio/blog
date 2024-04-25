@@ -31,7 +31,6 @@
     <properties>
         <entCoreVersion>5.0-b2school-SNAPSHOT</entCoreVersion>
         <web-utils.version>3.0-b2school-SNAPSHOT</web-utils.version>
-        <mongodb-helper.version>3.0-b2school-SNAPSHOT</mongodb-helper.version>
         <junitVersion>4.13.2</junitVersion>
         <explorerVersion>2.0-b2school-SNAPSHOT</explorerVersion>
     </properties>
@@ -48,12 +47,6 @@
             <artifactId>common</artifactId>
             <version>${entCoreVersion}</version>
             <classifier>fat</classifier>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>mongodb-helper</artifactId>
-            <version>${mongodb-helper.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
