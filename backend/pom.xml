@@ -46,7 +46,6 @@
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
             <version>${entCoreVersion}</version>
-            <classifier>fat</classifier>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -78,7 +77,6 @@
             <groupId>com.opendigitaleducation</groupId>
             <artifactId>explorer</artifactId>
             <version>${explorerVersion}</version>
-            <classifier>fat</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
