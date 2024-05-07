@@ -22,8 +22,6 @@
 
 package org.entcore.blog.services.impl;
 
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
@@ -43,6 +41,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.bson.conversions.Bson;
 import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.explorer.PostExplorerPlugin;
 import org.entcore.blog.security.BlogResourcesProvider;
@@ -60,6 +59,8 @@ import org.entcore.common.utils.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.mongodb.client.model.Filters.*;
 
 
 public class DefaultPostService implements PostService {
@@ -176,7 +177,7 @@ public class DefaultPostService implements PostService {
 	public void update(String postId, final JsonObject post, final UserInfos user,
 										 final Handler<Either<String, JsonObject>> result, final HttpServerRequest request) {
 		final long version = System.currentTimeMillis();
-		final JsonObject jQuery = MongoQueryBuilder.build(QueryBuilder.start("_id").is(postId));
+		final JsonObject jQuery = MongoQueryBuilder.build(eq("_id", postId));
 		mongo.findOne(POST_COLLECTION, jQuery,  MongoDbResult.validActionResultHandler(event -> {
 			if(event.isLeft()){
 				result.handle(event);
@@ -268,7 +269,7 @@ public class DefaultPostService implements PostService {
 
 	@Override
 	public void delete(UserInfos user, String blogId, String postId, final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query = QueryBuilder.start("_id").is(postId);
+		final Bson query = eq("_id", postId);
 		// TODO JBER not handled
 		mongo.delete(POST_COLLECTION, MongoQueryBuilder.build(query), event -> {
 			//must set id before notify
@@ -286,14 +287,18 @@ public class DefaultPostService implements PostService {
 	@Override
 	public Future<JsonObject> get(final PostFilter filter, final HttpServerRequest request) {
 		final Promise<JsonObject> promise = Promise.promise();
-		final QueryBuilder query = QueryBuilder.start("_id").is(filter.getPostId())
-				.put("blog.$id").is(filter.getBlogId())
-				.put("state").is(filter.getState().name());
+		final Bson query = and(
+			eq("_id", filter.getPostId()),
+			eq("blog.$id", filter.getBlogId()),
+			eq("state", filter.getState().name())
+		);
 		mongo.findOne(POST_COLLECTION, MongoQueryBuilder.build(query), keysWithTransformedContent, event -> {
 				Either<String, JsonObject> res = Utils.validResult(event);
 				if (res.isRight() && !res.right().getValue().isEmpty()) {
-						QueryBuilder query2 = QueryBuilder.start("_id").is(filter.getPostId())
-										.put("state").is(StateType.PUBLISHED.name());
+					final Bson query2 = and(
+						eq("_id", filter.getPostId()),
+						eq("state", StateType.PUBLISHED.name())
+					);
 						MongoUpdateBuilder incView = new MongoUpdateBuilder();
 						incView.inc("views", 1);
 						mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query2), incView.build());
@@ -343,7 +348,7 @@ public class DefaultPostService implements PostService {
 					post.put("contentVersion", 0)
 						.put("jsonContent", transformedContent.getJsonContent())
 						.put(TRANSFORMED_CONTENT_DB_FIELD_NAME, transformedContent.getCleanHtml());
-					final QueryBuilder findPost = QueryBuilder.start("_id").is(post.getString("_id"));
+					final Bson findPost = eq("_id", post.getString("_id"));
 					// Cache the products of the transformation so they can be reused until the manager updates the post
 					final MongoUpdateBuilder updateFields = new MongoUpdateBuilder()
 							.set("jsonContent", transformedContent.getJsonContent())
@@ -371,8 +376,8 @@ public class DefaultPostService implements PostService {
 	@Override
 	public void counter(final String blogId, final UserInfos user,
 	                    final Handler<Either<String, JsonArray>> result) {
-		final QueryBuilder query = QueryBuilder.start("blog.$id").is(blogId);
-		final QueryBuilder isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
+		final Bson query = eq("blog.$id", blogId);
+		final Bson isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
 		final JsonObject projection = new JsonObject();
 		projection.put("state", 1);
 		projection.put("_id", -1);
@@ -393,33 +398,36 @@ public class DefaultPostService implements PostService {
 				}
 				boolean isManager = 1 == res.getInteger("count", 0);
 
-				query.or(
-						QueryBuilder.start("state").is(StateType.PUBLISHED.name()).get(),
-						QueryBuilder.start().and(
-								QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-								QueryBuilder.start("state").is(StateType.DRAFT.name()).get()
-						).get(),
+				final Bson findQuery = and(
+					query,
+					or(
+						eq("state", StateType.PUBLISHED.name()),
+						and(
+								eq("author.userId", user.getUserId()),
+								eq("state", StateType.DRAFT.name())
+						),
 						isManager ?
-								QueryBuilder.start("state").is(StateType.SUBMITTED.name()).get() :
-								QueryBuilder.start().and(
-										QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-										QueryBuilder.start("state").is(StateType.SUBMITTED.name()).get()
-								).get()
+								eq("state", StateType.SUBMITTED.name()) :
+								and(
+										eq("author.userId", user.getUserId()),
+										eq("state", StateType.SUBMITTED.name())
+								)
+					)
 				);
-    			mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), null, projection, finalHandler);
+				mongo.find(POST_COLLECTION, MongoQueryBuilder.build(findQuery), null, projection, finalHandler);
 			}
 		});
 	}
 
 	@Override
 	public void count(final String blogId, final StateType state, final Handler<Either<String, Integer>> result){
-		final QueryBuilder query = QueryBuilder.start("blog.$id").is(blogId).put("state").is(state.name());
+		final Bson query = and(eq("blog.$id", blogId), eq("state", state.name()));
 		mongo.count(POST_COLLECTION, MongoQueryBuilder.build(query), event -> {
 			JsonObject res = event.body();
 			if (res != null && "ok".equals(res.getString("status"))) {
-				result.handle(new Either.Right(res.getInteger("count")));
+				result.handle(new Either.Right<>(res.getInteger("count")));
 			}else{
-				result.handle(new Either.Left(res.getString("message", "")));
+				result.handle(new Either.Left<>(res.getString("message", "")));
 			}
 		});
 
@@ -429,8 +437,8 @@ public class DefaultPostService implements PostService {
 	public void listPublic(String blogId, Integer page, int limit, String search,
 												 final HttpServerRequest request,
 												 final Handler<Either<String, JsonArray>> result) {
-		final QueryBuilder accessQuery = QueryBuilder.start("blog.$id").is(blogId).put("state").is(StateType.PUBLISHED.name());
-		final QueryBuilder query = getQueryListBuilder(search, result, accessQuery);
+		final Bson accessQuery = and(eq("blog.$id", blogId), eq("state", StateType.PUBLISHED.name()));
+		final Bson query = getQueryListBuilder(search, result, accessQuery);
 		final JsonObject sort = new JsonObject().put("sorted", -1);
 		final JsonObject projection = defaultKeys.copy();
 		//projection.remove("content");
@@ -459,7 +467,7 @@ public class DefaultPostService implements PostService {
 	public void listOnePublic(String blogId, String postId,
 														final HttpServerRequest request,
 														final Handler<Either<String, JsonArray>> result) {
-		final QueryBuilder query = QueryBuilder.start("blog.$id").is(blogId).put("state").is(StateType.PUBLISHED.name()).put("_id").is(postId);
+		final Bson query = and(eq("blog.$id", blogId), eq("state", StateType.PUBLISHED.name()), eq("_id", postId));
 		final JsonObject projection = defaultKeys.copy();
 		//projection.remove("content");
 		final Handler<Message<JsonObject>> finalHandler =event -> {
@@ -479,7 +487,7 @@ public class DefaultPostService implements PostService {
 	@Override
 	public void list(String blogId, final StateType state, final UserInfos user, final Integer page, final int limit, final String search,
 				final Handler<Either<String, JsonArray>> result) {
-		final QueryBuilder accessQuery = QueryBuilder.start("blog.$id").is(blogId).put("state").is(state.name());
+		Bson accessQuery = and(eq("blog.$id", blogId), eq("state", state.name()));
 		final JsonObject sort = new JsonObject().put("sorted", -1);
 		final JsonObject projection = defaultKeys.copy();
 		projection.remove("content");
@@ -491,7 +499,7 @@ public class DefaultPostService implements PostService {
 			}
 		};
 
-		final QueryBuilder query = getQueryListBuilder(search, result, accessQuery);
+		final Bson query = getQueryListBuilder(search, result, accessQuery);
 
 		if (query != null) {
 
@@ -505,18 +513,21 @@ public class DefaultPostService implements PostService {
 					mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, skip, limit, limit, finalHandler);
 				}
 			} else {
-				QueryBuilder query2 = getDefautQueryBuilderForList(blogId, user,true);
+				final Bson query2 = getDefautQueryBuilderForList(blogId, user,true);
 				mongo.count("blogs", MongoQueryBuilder.build(query2), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						JsonObject res = event.body();
 
+						final Bson finalAccessQuery;
 						if ((res != null && "ok".equals(res.getString("status")) &&
 								1 != res.getInteger("count")) || StateType.DRAFT.equals(state)) {
-							accessQuery.put("author.userId").is(user.getUserId());
+							finalAccessQuery = and(accessQuery, eq("author.userId", user.getUserId()));
+						} else {
+							finalAccessQuery = accessQuery;
 						}
 
-						final QueryBuilder listQuery = getQueryListBuilder(search, result, accessQuery);
+						final Bson listQuery = getQueryListBuilder(search, result, finalAccessQuery);
 						if (limit > 0 && page == null) {
 							mongo.find(POST_COLLECTION, MongoQueryBuilder.build(listQuery), sort, projection, 0, limit, limit, finalHandler);
 						} else if (page == null) {
@@ -537,14 +548,14 @@ public class DefaultPostService implements PostService {
 															 final PostProjection postProjection,
 															 final Handler<Either<String, JsonArray>> result,
 									 final HttpServerRequest request) {
-		final QueryBuilder accessQuery;
+		final Bson accessQuery;
 		if (states == null || states.isEmpty()) {
-			accessQuery = QueryBuilder.start("blog.$id").is(blogId);
+			accessQuery = eq("blog.$id", blogId);
 		} else {
-			accessQuery = QueryBuilder.start("blog.$id").is(blogId).put("state").in(states);
+			accessQuery = and(eq("blog.$id", blogId), eq("state", states));
 		}
 
-		final QueryBuilder isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
+		final Bson isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
 		final JsonObject sort = new JsonObject().put("sorted", -1);
 		final JsonObject projection = defaultKeys.copy();
 		// If the user doesn't want the content we do not fetch it from the database
@@ -601,53 +612,53 @@ public class DefaultPostService implements PostService {
 			}
 		};
 
-		mongo.count("blogs", MongoQueryBuilder.build(isManagerQuery), new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body();
-				if(res == null || !"ok".equals(res.getString("status"))){
-					result.handle(new Either.Left<String, JsonArray>(event.body().encodePrettily()));
-					return;
-				}
-				boolean isManager = 1 == res.getInteger("count", 0);
+		mongo.count("blogs", MongoQueryBuilder.build(isManagerQuery), event -> {
+      JsonObject res = event.body();
+      if(res == null || !"ok".equals(res.getString("status"))){
+        result.handle(new Either.Left<>(event.body().encodePrettily()));
+        return;
+      }
+      boolean isManager = 1 == res.getInteger("count", 0);
 
-				accessQuery.or(
-						QueryBuilder.start("state").is(StateType.PUBLISHED.name()).get(),
-						QueryBuilder.start().and(
-								QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-								QueryBuilder.start("state").is(StateType.DRAFT.name()).get()
-						).get(),
-						isManager ?
-								QueryBuilder.start("state").is(StateType.SUBMITTED.name()).get() :
-								QueryBuilder.start().and(
-										QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-										QueryBuilder.start("state").is(StateType.SUBMITTED.name()).get()
-								).get()
-				);
+			final Bson finalAccessQuery = and(
+				accessQuery,
+				or(
+          eq("state", StateType.PUBLISHED.name()),
+          and(
+              eq("author.userId", user.getUserId()),
+              eq("state", StateType.DRAFT.name())
+          ),
+          isManager ?
+              eq("state", StateType.SUBMITTED.name()) :
+              and(
+                  eq("author.userId", user.getUserId()),
+                  eq("state", StateType.SUBMITTED.name())
+              )
+      	)
+			);
 
-				final QueryBuilder query = getQueryListBuilder(search, result, accessQuery);
+      final Bson query = getQueryListBuilder(search, result, finalAccessQuery);
 
-				if (query != null) {
-					if (limit > 0 && page == null) {
-						mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, 0, limit, limit, finalHandler);
-					} else if (page == null) {
-						mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, finalHandler);
-					} else {
-						final int skip = (0 == page) ? -1 : page * limit;
-						mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, skip, limit, limit, finalHandler);
-					}
-				}
-			}
-		});
+      if (query != null) {
+        if (limit > 0 && page == null) {
+          mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, 0, limit, limit, finalHandler);
+        } else if (page == null) {
+          mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, finalHandler);
+        } else {
+          final int skip = (0 == page) ? -1 : page * limit;
+          mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, skip, limit, limit, finalHandler);
+        }
+      }
+    });
 	}
 
-	private QueryBuilder getQueryListBuilder(String search, Handler<Either<String, JsonArray>> result, QueryBuilder accessQuery) {
-		final QueryBuilder query;
+	private Bson getQueryListBuilder(String search, Handler<Either<String, JsonArray>> result, final Bson accessQuery) {
+		final Bson query;
 		if (!StringUtils.isEmpty(search)) {
 			final List<String> searchWords = DefaultBlogService.checkAndComposeWordFromSearchText(search, this.searchWordMinSize);
 			if (!searchWords.isEmpty()) {
-				final QueryBuilder searchQuery = new QueryBuilder();
-				searchQuery.text(MongoDbSearchService.textSearchedComposition(searchWords));
-				query = new QueryBuilder().and(accessQuery.get(), searchQuery.get());
+				final Bson searchQuery = text(MongoDbSearchService.textSearchedComposition(searchWords));
+				query = and(accessQuery, searchQuery);
 			} else {
 				query = null;
 				//empty result (no word to search)
@@ -661,8 +672,8 @@ public class DefaultPostService implements PostService {
 
 	@Override
 	public void listOne(String blogId, String postId, final UserInfos user, final Handler<Either<String, JsonArray>> result) {
-		final QueryBuilder query = QueryBuilder.start("blog.$id").is(blogId).put("_id").is(postId);
-		final QueryBuilder isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
+		final Bson query = and(eq("blog.$id", blogId), eq("_id", postId));
+		final Bson isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
 		final JsonObject sort = new JsonObject().put("modified", -1);
 		final JsonObject projection = defaultKeys.copy();
 		projection.remove("content");
@@ -683,91 +694,93 @@ public class DefaultPostService implements PostService {
 				}
 				boolean isManager = 1 == res.getInteger("count", 0);
 
-				query.or(
-						QueryBuilder.start("state").is(StateType.PUBLISHED.name()).get(),
-						QueryBuilder.start().and(
-								QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-								QueryBuilder.start("state").is(StateType.DRAFT.name()).get()
-						).get(),
+				final Bson finalQuery = and(
+					query,
+					or(
+						eq("state", StateType.PUBLISHED.name()),
+						and(
+								eq("author.userId", user.getUserId()),
+								eq("state", StateType.DRAFT.name())
+						),
 						isManager ?
-								QueryBuilder.start("state").is(StateType.SUBMITTED.name()).get() :
-								QueryBuilder.start().and(
-										QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-										QueryBuilder.start("state").is(StateType.SUBMITTED.name()).get()
-								).get()
+								eq("state", StateType.SUBMITTED.name()) :
+								and(
+										eq("author.userId", user.getUserId()),
+										eq("state", StateType.SUBMITTED.name())
+								)
+					)
 				);
-				mongo.find(POST_COLLECTION, MongoQueryBuilder.build(query), sort, projection, finalHandler);
+				mongo.find(POST_COLLECTION, MongoQueryBuilder.build(finalQuery), sort, projection, finalHandler);
 			}
 		});
 	}
 
-	private QueryBuilder getDefautQueryBuilderForList(String blogId, UserInfos user,boolean manager) {
-		List<DBObject> groups = new ArrayList<>();
+	private Bson getDefautQueryBuilderForList(String blogId, UserInfos user,boolean manager) {
+		List<Bson> groups = new ArrayList<>();
 		if(manager) {
-			groups.add(QueryBuilder.start("userId").is(user.getUserId())
-					.put(MANAGER_ACTION).is(true).get());
+			groups.add(and(eq("userId", user.getUserId()), eq(MANAGER_ACTION, true)));
 		}else {
-			groups.add(QueryBuilder.start("userId").is(user.getUserId())
-					.put(this.listPostAction).is(true).get());
+			groups.add(and(eq("userId", user.getUserId()), eq(this.listPostAction, true)));
 		}
 		for (String gpId: user.getGroupsIds()) {
 			if(manager) {
-				groups.add(QueryBuilder.start("groupId").is(gpId)
-						.put(MANAGER_ACTION).is(true).get());
+				groups.add(and(eq("groupId", gpId), eq(MANAGER_ACTION, true)));
 			}else {
-				groups.add(QueryBuilder.start("groupId").is(gpId)
-						.put(this.listPostAction).is(true).get());
+				groups.add(and(eq("groupId", gpId), eq(this.listPostAction, true)));
 			}
 		}
-		return QueryBuilder.start("_id").is(blogId).or(
-				QueryBuilder.start("author.userId").is(user.getUserId()).get(),
-				QueryBuilder.start("shared").elemMatch(
-				new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get()
+		return and(
+			eq("_id", blogId),
+			or(
+				eq("author.userId", user.getUserId()),
+				elemMatch("shared", or(groups))
+			)
 		);
 	}
 
 	@Override
 	public void submit(String blogId, String postId, UserInfos user, final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query = QueryBuilder.start("_id").is(postId).put("blog.$id").is(blogId)
-				.put("state").is(StateType.DRAFT.name()).put("author.userId").is(user.getUserId());
+		final Bson query = and(
+			eq("_id", postId),
+			eq("blog.$id", blogId),
+			eq("state", StateType.DRAFT.name()),
+			eq("author.userId", user.getUserId())
+		);
 		final JsonObject q = MongoQueryBuilder.build(query);
 		JsonObject keys = new JsonObject().put("blog", 1).put("firstPublishDate", 1);
 		JsonArray fetch = new JsonArray().add("blog");
 		mongo.findOne(POST_COLLECTION, q, keys, fetch,
-				new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonObject res = event.body().getJsonObject("result", new JsonObject());
-				if ("ok".equals(event.body().getString("status")) && res.size() > 0) {
-					BlogService.PublishType type = Utils.stringToEnum(res
-							.getJsonObject("blog",  new JsonObject()).getString("publish-type"),
-							BlogService.PublishType.RESTRAINT, BlogService.PublishType.class);
-					final StateType state = (BlogService.PublishType.RESTRAINT.equals(type)) ?
-							StateType.SUBMITTED : StateType.PUBLISHED;
-					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", state.name());
+      event -> {
+        final JsonObject res = event.body().getJsonObject("result", new JsonObject());
+        if ("ok".equals(event.body().getString("status")) && res.size() > 0) {
+          BlogService.PublishType type = Utils.stringToEnum(res
+              .getJsonObject("blog",  new JsonObject()).getString("publish-type"),
+              BlogService.PublishType.RESTRAINT, BlogService.PublishType.class);
+          final StateType state = (BlogService.PublishType.RESTRAINT.equals(type)) ?
+              StateType.SUBMITTED : StateType.PUBLISHED;
+          MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", state.name());
 
-					// if IMMEDIATE published post, first publishing must define the first published date
-					if (StateType.PUBLISHED.equals(state) && res.getJsonObject("firstPublishDate") == null) {
-						updateQuery = updateQuery.set("firstPublishDate", MongoDb.now()).set("sorted",  MongoDb.now());
-					}
+          // if IMMEDIATE published post, first publishing must define the first published date
+          if (StateType.PUBLISHED.equals(state) && res.getJsonObject("firstPublishDate") == null) {
+            updateQuery = updateQuery.set("firstPublishDate", MongoDb.now()).set("sorted",  MongoDb.now());
+          }
 
-					mongo.update(POST_COLLECTION, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> res) {
-							res.body().put("state", state.name());
-							result.handle(Utils.validResult(res));
-						}
-					});
-				} else {
-					result.handle(Utils.validResult(event));
-				}
-			}
-		});
+          mongo.update(POST_COLLECTION, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> res) {
+              res.body().put("state", state.name());
+              result.handle(Utils.validResult(res));
+            }
+          });
+        } else {
+          result.handle(Utils.validResult(event));
+        }
+      });
 	}
 
 	@Override
 	public void publish(final String blogId, final String postId, final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query = QueryBuilder.start("_id").is(postId).put("blog.$id").is(blogId);
+		final Bson query = and(eq("_id", postId), eq("blog.$id", blogId));
 		MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", StateType.PUBLISHED.name());
 		mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), updateQuery.build(),
 				MongoDbResult.validActionResultHandler(new Handler<Either<String,JsonObject>>() {
@@ -776,11 +789,11 @@ public class DefaultPostService implements PostService {
 					result.handle(event);
 					return;
 				}
-
-				QueryBuilder query = QueryBuilder
-					.start("_id").is(postId)
-					.put("blog.$id").is(blogId)
-					.put("firstPublishDate").exists(false);
+				final Bson query = and(
+					eq("_id", postId),
+					eq("blog.$id", blogId),
+					exists("firstPublishDate", false)
+				);
 
 				MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("firstPublishDate", MongoDb.now()).set("sorted",  MongoDb.now());
 
@@ -792,7 +805,7 @@ public class DefaultPostService implements PostService {
 
 	@Override
 	public void unpublish(String postId, final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query = QueryBuilder.start("_id").is(postId);
+		final Bson query = eq("_id", postId);
 		MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", StateType.DRAFT.name());
 		mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), updateQuery.build(),
 				new Handler<Message<JsonObject>>() {
@@ -810,7 +823,7 @@ public class DefaultPostService implements PostService {
 			result.handle(new Either.Left<String, JsonObject>("Validation error : invalid comment."));
 			return;
 		}
-		QueryBuilder query = QueryBuilder.start("_id").is(postId).put("blog.$id").is(blogId);
+		final Bson query = and(eq("_id", postId), eq("blog.$id", blogId));
 		final JsonObject q = MongoQueryBuilder.build(query);
 		JsonObject keys = new JsonObject().put("blog", 1);
 		JsonArray fetch = new JsonArray().add("blog");
@@ -859,8 +872,9 @@ public class DefaultPostService implements PostService {
 			result.handle(new Either.Left<String, JsonObject>("Validation error : invalid comment."));
 			return;
 		}
-		QueryBuilder query = QueryBuilder.start("_id").is(postId).put("comments").elemMatch(
-				QueryBuilder.start("id").is(commentId).get());
+		final Bson query = and(
+			eq("_id", postId),
+			elemMatch("comments", eq("id", commentId)));
 
 		final JsonObject user = new JsonObject()
 				.put("userId", coauthor.getUserId())
@@ -880,36 +894,34 @@ public class DefaultPostService implements PostService {
 	@Override
 	public void deleteComment(final String blogId, final String commentId, final UserInfos user,
 			final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query2 = getDefautQueryBuilderForList(blogId, user,false);
-		mongo.count("blogs", MongoQueryBuilder.build(query2), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body();
-				QueryBuilder tmp = QueryBuilder.start("id").is(commentId);
-				if (res != null && "ok".equals(res.getString("status")) &&
-						1 != res.getInteger("count")) {
-					tmp.put("author.userId").is(user.getUserId());
-				}
-				QueryBuilder query = QueryBuilder.start("blog.$id").is(blogId).put("comments").elemMatch(
-					tmp.get()
-				);
-				JsonObject c = new JsonObject().put("id", commentId);
-				MongoUpdateBuilder queryUpdate = new MongoUpdateBuilder().pull("comments", c);
-				mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), queryUpdate.build(),
-						new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> res) {
-						result.handle(Utils.validResult(res));
-					}
-				});
-			}
-		});
+		final Bson query2 = getDefautQueryBuilderForList(blogId, user,false);
+		mongo.count("blogs", MongoQueryBuilder.build(query2), event -> {
+      JsonObject res = event.body();
+			Bson tmp = eq("id", commentId);
+      if (res != null && "ok".equals(res.getString("status")) &&
+          1 != res.getInteger("count")) {
+        tmp = and(tmp, eq("author.userId", user.getUserId()));
+      }
+			final Bson query = and(
+				eq("blog.$id", blogId),
+				elemMatch("comments", tmp)
+      );
+      JsonObject c = new JsonObject().put("id", commentId);
+      MongoUpdateBuilder queryUpdate = new MongoUpdateBuilder().pull("comments", c);
+      mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), queryUpdate.build(),
+          new Handler<Message<JsonObject>>() {
+        @Override
+        public void handle(Message<JsonObject> res) {
+          result.handle(Utils.validResult(res));
+        }
+      });
+    });
 	}
 
 	@Override
 	public void listComment(String blogId, String postId, final UserInfos user,
 			final Handler<Either<String, JsonArray>> result) {
-		final QueryBuilder query = QueryBuilder.start("_id").is(postId).put("blog.$id").is(blogId);
+		final Bson query = and(eq("_id", postId), eq("blog.$id", blogId));
 		JsonObject keys = new JsonObject().put("comments", 1).put("blog", 1);
 		JsonArray fetch = new JsonArray().add("blog");
 		mongo.findOne(POST_COLLECTION, MongoQueryBuilder.build(query), keys, fetch,
@@ -952,8 +964,9 @@ public class DefaultPostService implements PostService {
 	@Override
 	public void publishComment(String blogId, String commentId,
 				final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query = QueryBuilder.start("blog.$id").is(blogId).put("comments").elemMatch(
-			QueryBuilder.start("id").is(commentId).get()
+		final Bson query = and(
+			eq("blog.$id", blogId),
+			elemMatch("comments", eq("id", commentId))
 		);
 		MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("comments.$.state", StateType.PUBLISHED.name());
 		mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), updateQuery.build(),

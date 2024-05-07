@@ -1,6 +1,5 @@
 package org.entcore.blog;
 
-import com.mongodb.QueryBuilder;
 import com.opendigitaleducation.explorer.ingest.IngestJobMetricsRecorderFactory;
 import com.opendigitaleducation.explorer.tests.ExplorerTestHelper;
 import fr.wseduc.mongodb.MongoDb;
@@ -20,6 +19,7 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.bson.conversions.Bson;
 import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.explorer.BlogExplorerPlugin;
 import org.entcore.blog.explorer.PostExplorerPlugin;
@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
 import static fr.wseduc.mongodb.MongoDbAPI.isOk;
 import static org.entcore.blog.BlogExplorerPluginClientTest.createBlog;
 
@@ -113,7 +115,7 @@ public class PostServiceContentTransformerTest {
                 context.assertEquals("<p>clean html</p>"+post1.getString("content"), postGet.getString("content"));
                 context.assertEquals(1, postGet.getInteger("contentVersion"));
                 // Checking that fields not returned by get method are correctly persisted in the database
-                QueryBuilder query = QueryBuilder.start("_id").is(postId).put("blog.$id").is(blogId);
+                final Bson query = and(eq("_id", postId), eq("blog.$id", blogId));
                 mongoDb.findOne("posts", MongoQueryBuilder.build(query), new JsonObject().put("jsonContent", 1).put("contentPlain", 1), event -> {
                     JsonObject result = event.body().getJsonObject("result");
                     context.assertEquals(new JsonObject().put("content", post1.getString("content")), result.getJsonObject("jsonContent"));
@@ -141,7 +143,7 @@ public class PostServiceContentTransformerTest {
                 context.assertEquals("<p>clean html</p>"+post2.getString("content"), postGet.getString("content"));
                 context.assertEquals(1, postGet.getInteger("contentVersion"));
                 // Checking that fields not returned by get method are correctly persisted in the database
-                QueryBuilder query = QueryBuilder.start("_id").is(postId).put("blog.$id").is(blogId);
+                final Bson query = and(eq("_id", postId), eq("blog.$id", blogId));
                 mongoDb.findOne("posts", MongoQueryBuilder.build(query), new JsonObject().put("jsonContent", 1).put("contentPlain", 1), event -> {
                     context.assertEquals(new JsonObject().put("content", post2.getString("content")), event.body().getJsonObject("result").getJsonObject("jsonContent"));
                     context.assertEquals("plainTextContent", event.body().getJsonObject("result").getString("contentPlain"));
@@ -228,7 +230,7 @@ public class PostServiceContentTransformerTest {
                     .put("content", 1)
                     .put("contentVersion", 1)
                     .put(DefaultPostService.TRANSFORMED_CONTENT_DB_FIELD_NAME, 1);
-                final QueryBuilder query = QueryBuilder.start("_id").is(blogAndPost.post.getString("_id"));
+                final Bson query = eq("_id", blogAndPost.post.getString("_id"));
                 mongoDb.findOne("posts", MongoQueryBuilder.build(query), keys, e -> {
                     Either<String, JsonObject> res = Utils.validResult(e);
                     if(res.isLeft()) {
@@ -263,7 +265,7 @@ public class PostServiceContentTransformerTest {
 
     private Future<JsonObject> simulateOldContentData(JsonObject post) {
         final Promise<JsonObject> promise = Promise.promise();
-        final QueryBuilder query = QueryBuilder.start("_id").is(post.getString("_id"));
+        final Bson query = eq("_id", post.getString("_id"));
         MongoUpdateBuilder simulateOldUpdateQuery = new MongoUpdateBuilder();
         simulateOldUpdateQuery.unset("jsonContent");
         simulateOldUpdateQuery.unset("contentVersion");

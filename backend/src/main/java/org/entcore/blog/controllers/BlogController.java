@@ -22,7 +22,6 @@
 
 package org.entcore.blog.controllers;
 
-import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.rs.Delete;
@@ -33,7 +32,6 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
@@ -59,7 +57,6 @@ import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.share.ShareService;
-import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.ResourceUtils;
@@ -71,6 +68,7 @@ import org.entcore.blog.to.PostProjection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.mongodb.client.model.Filters.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
@@ -832,7 +830,7 @@ public class BlogController extends BaseController {
 	private void cleanFolders(String id, UserInfos user, List<String> recipientIds){
 		//owner style keep the reference to the ressource
 		JsonArray jsonRecipients = new JsonArray(recipientIds).add(user.getUserId());
-		JsonObject query = MongoQueryBuilder.build(QueryBuilder.start("ressourceIds").is(id).and("owner.userId").notIn(jsonRecipients));
+		JsonObject query = MongoQueryBuilder.build(and(eq("ressourceIds", id), not(in("owner.userId", jsonRecipients))));
 		JsonObject update = new JsonObject().put("$pull", new JsonObject().put("ressourceIds", new JsonObject().put("$nin",jsonRecipients)));
 		mongo.update("blogsFolders", query, update, message -> {
 			JsonObject body = message.body();
