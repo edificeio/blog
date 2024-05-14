@@ -204,7 +204,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
               disabled={isMutating || (isEmptyContent && title.length == 0)}
               onClick={handleSaveClick}
             >
-              {t("blog.save")}
+              {t("draft.save")}
             </Button>
             <Button
               type="button"
