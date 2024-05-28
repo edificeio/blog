@@ -48,7 +48,7 @@ export const CommentCard = ({
   onRemove,
 }: CommentProps) => {
   const [editable, setEditable] = useState(mode === "edit");
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState(content || "");
 
   const { t } = useTranslation("common");
   const { fromNow } = useDate();
