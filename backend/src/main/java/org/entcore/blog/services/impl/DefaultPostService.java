@@ -552,7 +552,7 @@ public class DefaultPostService implements PostService {
 		if (states == null || states.isEmpty()) {
 			accessQuery = eq("blog.$id", blogId);
 		} else {
-			accessQuery = and(eq("blog.$id", blogId), eq("state", states));
+			accessQuery = and(eq("blog.$id", blogId), in("state", states));
 		}
 
 		final Bson isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
