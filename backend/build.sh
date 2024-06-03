@@ -56,7 +56,7 @@ test () {
 function build() {
   echo "Building..."
   if [ "$NO_DOCKER" = "true" ] ; then
-    mvn $MVN_OPTS shadowJar install publishToMavenLocal
+    mvn $MVN_OPTS install -DskipTests
   else
     docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
   fi
@@ -71,7 +71,7 @@ publish() {
     *)         export nexusRepository='releases' ;;
   esac
 
-  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskiptTests --settings /var/maven/.m2/settings.xml deploy
+  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
 }
 
 for param in "$@"
