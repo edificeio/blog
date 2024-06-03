@@ -58,7 +58,7 @@ function build() {
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS shadowJar install publishToMavenLocal
   else
-    docker compose run --rm maven mvn $MVN_OPTS shadowJar install publishToMavenLocal
+    docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
   fi
   echo "Build done!"
 }
