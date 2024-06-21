@@ -12,7 +12,6 @@ import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.*;
@@ -33,8 +32,7 @@ public class ShareAndOwnerBlog implements ResourcesProvider {
           for (String gpId : user.getGroupsIds()) {
             groups.add(and(eq("groupId", gpId), eq(sharedMethod, true)));
           }
-// TODO Vertx4 check the validity of the transformation
-            final Bson query = or(
+            final Bson query = and(
               eq("_id", (id)),
               or(
                 eq("author.userId", user.getUserId()),
