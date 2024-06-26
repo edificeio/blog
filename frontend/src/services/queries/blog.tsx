@@ -14,6 +14,7 @@ import {
   loadBlogCounter,
   loadBlogPublic,
   loadPostsList,
+  loadPostsViewsCounter,
   sessionHasWorkflowRights,
 } from "../api/blog";
 import usePostsFilter from "~/hooks/usePostsFilter";
@@ -47,6 +48,10 @@ export const blogQueryKeys = {
     return queryKey;
   },
   public: (slug: string) => ["public blog", slug],
+  postsViewsCounters: (ressourceIds: string[]) => [
+    "postsViewsCounter",
+    ressourceIds,
+  ],
 };
 
 /** Query blog data */
@@ -69,6 +74,13 @@ export const blogCounterQuery = (blogId: string) => {
   return {
     queryKey: blogQueryKeys.counter(blogId),
     queryFn: () => loadBlogCounter(blogId),
+  };
+};
+
+export const postsViewsCountersQuery = (ressourceIds: string[]) => {
+  return {
+    queryKey: blogQueryKeys.postsViewsCounters(ressourceIds),
+    queryFn: () => loadPostsViewsCounter(ressourceIds),
   };
 };
 
@@ -176,7 +188,7 @@ export const usePostsList = (
 ) => {
   const params = useParams<{ blogId: string; slug: string }>();
   const { postsFilters } = usePostsFilter();
-  const { postPageSize } = useBlogState();
+  const { postPageSize, postsViewsCounters } = useBlogState();
 
   if (!blogId) {
     if (!params.blogId) {
@@ -197,9 +209,24 @@ export const usePostsList = (
       publicView,
     ),
   );
+  const postIds = postsViewsCounters ? Object.keys(postsViewsCounters) : [];
+  const postIdsToRequest =
+    query.data?.pages[0]
+      .map((post) => post._id)
+      .filter((postId) => !postIds.includes(postId)) || [];
+  // Request the views counter for the posts that are not in the counter
+  const { counters } = usePostsViewsCounters(postIdsToRequest);
 
+  // TODO ajouter les compteurs de vues dans le store (pas eu le temps de le faire pour le moment)
+  // const { addPostsViewsCounters } = useStoreUpdaters();
+
+  if (counters) {
+    // si je l'ajoute ici j'ai une belle boucle infinie
+    // addPostsViewsCounters(counters);
+  }
   return {
     posts: query.data?.pages.flatMap((page) => page) as Post[],
+    counters,
     query,
     publicView,
   };
@@ -227,4 +254,13 @@ export const useDeleteBlog = (blogId: string) => {
       queryClient.invalidateQueries({ queryKey: blogQueryKeys.all(blogId) });
     },
   });
+};
+
+export const usePostsViewsCounters = (resourceIds: string[]) => {
+  const query = useQuery(postsViewsCountersQuery(resourceIds));
+
+  return {
+    counters: query.data,
+    query,
+  };
 };

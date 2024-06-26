@@ -1,4 +1,4 @@
-import { odeServices } from "edifice-ts-client";
+import { ViewsCounters, odeServices } from "edifice-ts-client";
 
 import { Blog } from "~/models/blog";
 import { BlogCounter } from "~/models/blogCounter";
@@ -80,4 +80,16 @@ export const sessionHasWorkflowRights = async (actionRights: string[]) => {
  */
 export function deleteBlog(blogId: string) {
   return checkHttpError(odeServices.http().delete<void>(`/blog/${blogId}`));
+}
+
+/**
+ * Load the views counter of a list of posts
+ * @param resourceIds list of post ids
+ * @returns views counters
+ */
+export function loadPostsViewsCounter(resourceIds: string[]) {
+  const viewService = odeServices.views("blog", "post");
+  return checkHttpError<ViewsCounters>(
+    viewService.getViewsCounters(resourceIds),
+  );
 }
