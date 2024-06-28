@@ -4,7 +4,7 @@ import { ViewsCounter, ViewsModal } from "@edifice-ui/react";
 import { ViewsDetails } from "edifice-ts-client";
 
 import { Post } from "~/models/post";
-import { loadPostsViewsDetails } from "~/services/api";
+import { loadPostViewsDetails, triggerViewOnPost } from "~/services/api";
 
 export interface PostAudienceProps {
   blogId: string;
@@ -22,9 +22,15 @@ export const PostAudience = ({
   const [isViewsModalOpen, setIsViewsModalOpen] = useState(false);
 
   const loadViews = useCallback(async () => {
-    const details = await loadPostsViewsDetails(post._id);
+    const details = await loadPostViewsDetails(post._id);
     setViewsDetails(details);
   }, [post._id, setViewsDetails]);
+
+  useEffect(() => {
+    // Trigger a view once
+    triggerViewOnPost(post._id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     withViews && loadViews();

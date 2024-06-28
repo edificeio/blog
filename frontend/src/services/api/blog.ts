@@ -91,13 +91,3 @@ export function loadPostsViewsCounter(resourceIds: string[]) {
   const viewService = odeServices.audience("blog", "post").views;
   return checkHttpError(viewService.getCounters(resourceIds));
 }
-
-/**
- * Load the views details of a post
- * @param resourceId post id
- * @returns views details
- */
-export function loadPostsViewsDetails(resourceId: string) {
-  const viewService = odeServices.audience("blog", "post").views;
-  return checkHttpError(viewService.getDetails(resourceId));
-}
