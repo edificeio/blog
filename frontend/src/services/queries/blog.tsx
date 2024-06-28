@@ -1,3 +1,5 @@
+import { useCallback, useEffect } from "react";
+
 import { useToast } from "@edifice-ui/react";
 import {
   useInfiniteQuery,
@@ -19,7 +21,7 @@ import {
 } from "../api/blog";
 import usePostsFilter from "~/hooks/usePostsFilter";
 import { Post, PostState } from "~/models/post";
-import { useBlogState } from "~/store";
+import { useBlogState, useStoreUpdaters } from "~/store";
 import { IActionDefinition } from "~/utils/types";
 
 export const blogQueryKeys = {
@@ -77,10 +79,10 @@ export const blogCounterQuery = (blogId: string) => {
   };
 };
 
-export const postsViewsCountersQuery = (ressourceIds: string[]) => {
+export const postsViewsCountersQuery = (resourceIds: string[]) => {
   return {
-    queryKey: blogQueryKeys.postsViewsCounters(ressourceIds),
-    queryFn: () => loadPostsViewsCounter(ressourceIds),
+    queryKey: blogQueryKeys.postsViewsCounters(resourceIds),
+    queryFn: () => loadPostsViewsCounter(resourceIds),
   };
 };
 
@@ -96,6 +98,7 @@ export const postsListQuery = (
     queryKey: blogQueryKeys.postsList(blogId, state, search, isPublic),
     queryFn: ({ pageParam = 0 }) =>
       loadPostsList(blogId, pageParam, state, search, nbComments, isPublic),
+
     initialPageParam: 0,
     getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
       if (
@@ -187,8 +190,9 @@ export const usePostsList = (
   withNbComments: boolean = true,
 ) => {
   const params = useParams<{ blogId: string; slug: string }>();
+  const { addPostsViewsCounters } = useStoreUpdaters();
   const { postsFilters } = usePostsFilter();
-  const { postPageSize, postsViewsCounters } = useBlogState();
+  const { postPageSize } = useBlogState();
 
   if (!blogId) {
     if (!params.blogId) {
@@ -198,6 +202,18 @@ export const usePostsList = (
   }
 
   const publicView = !!params.slug;
+
+  // Request the views counter for a list of posts id
+  const loadCounters = useCallback(
+    async (resourceIds: string[]) => {
+      if (resourceIds.length > 0) {
+        const counters = await loadPostsViewsCounter(resourceIds);
+        // Add views counter to the store
+        addPostsViewsCounters(counters);
+      }
+    },
+    [addPostsViewsCounters],
+  );
 
   const query = useInfiniteQuery(
     postsListQuery(
@@ -209,24 +225,21 @@ export const usePostsList = (
       publicView,
     ),
   );
-  const postIds = postsViewsCounters ? Object.keys(postsViewsCounters) : [];
-  const postIdsToRequest =
-    query.data?.pages[0]
-      .map((post) => post._id)
-      .filter((postId) => !postIds.includes(postId)) || [];
-  // Request the views counter for the posts that are not in the counter
-  const { counters } = usePostsViewsCounters(postIdsToRequest);
 
-  // TODO ajouter les compteurs de vues dans le store (pas eu le temps de le faire pour le moment)
-  // const { addPostsViewsCounters } = useStoreUpdaters();
+  // Wait for the end of above infinite query to load views counters.
+  useEffect(() => {
+    const pagesNumber = query.data?.pages.length;
+    if (typeof pagesNumber === "number" && pagesNumber > 0) {
+      const lastPageIds = query.data?.pages[pagesNumber - 1].map(
+        (post) => post._id,
+      ) as string[];
+      loadCounters(lastPageIds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.data?.pages.length]);
 
-  if (counters) {
-    // si je l'ajoute ici j'ai une belle boucle infinie
-    // addPostsViewsCounters(counters);
-  }
   return {
     posts: query.data?.pages.flatMap((page) => page) as Post[],
-    counters,
     query,
     publicView,
   };

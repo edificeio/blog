@@ -106,11 +106,13 @@ export function createPost(blogId: string, title: string, content: string) {
 }
 
 export function loadPostViewsDetails(resourceId: string) {
-  const viewService = odeServices.views("blog", "post");
-  return checkHttpError<ViewsDetails>(viewService.getViewsDetails(resourceId));
+  const viewService = odeServices.audience("blog", "post").views;
+  return checkHttpError<ViewsDetails | undefined>(
+    viewService.getDetails(resourceId),
+  );
 }
 
 export function triggerViewOnPost(resourceId: string) {
-  const viewService = odeServices.views("blog", "post");
-  return checkHttpError<number>(viewService.postView(resourceId));
+  const viewService = odeServices.audience("blog", "post").views;
+  return checkHttpError<void>(viewService.trigger(resourceId));
 }

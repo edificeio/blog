@@ -1,4 +1,4 @@
-import { ViewsCounters, odeServices } from "edifice-ts-client";
+import { odeServices } from "edifice-ts-client";
 
 import { Blog } from "~/models/blog";
 import { BlogCounter } from "~/models/blogCounter";
@@ -88,8 +88,16 @@ export function deleteBlog(blogId: string) {
  * @returns views counters
  */
 export function loadPostsViewsCounter(resourceIds: string[]) {
-  const viewService = odeServices.views("blog", "post");
-  return checkHttpError<ViewsCounters>(
-    viewService.getViewsCounters(resourceIds),
-  );
+  const viewService = odeServices.audience("blog", "post").views;
+  return checkHttpError(viewService.getCounters(resourceIds));
+}
+
+/**
+ * Load the views details of a post
+ * @param resourceId post id
+ * @returns views details
+ */
+export function loadPostsViewsDetails(resourceId: string) {
+  const viewService = odeServices.audience("blog", "post").views;
+  return checkHttpError(viewService.getDetails(resourceId));
 }

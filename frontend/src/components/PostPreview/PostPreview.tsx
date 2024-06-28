@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   Image,
+  ViewsCounter,
   getThumbnail,
 } from "@edifice-ui/react";
 import clsx from "clsx";
@@ -32,9 +33,13 @@ export type PostPreviewProps = {
    * Index of the post in the list
    */
   index: number;
+  /**
+   * (optional) Views counter
+   */
+  views?: number;
 };
 
-export const PostPreview = ({ post, index }: PostPreviewProps) => {
+export const PostPreview = ({ post, index, views }: PostPreviewProps) => {
   const { t } = useTranslation("blog");
   const navigate = useNavigate();
 
@@ -224,6 +229,13 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex gap-12 small text-gray-700 align-items-center ">
+                {typeof views === "number" ? (
+                  <>
+                    <ViewsCounter viewsCounter={views} />
+                    <span className="separator d-none d-md-block"></span>
+                  </>
+                ) : null}
+
                 {typeof post.nbComments === "number" && (
                   <div className="d-flex align-items-center gap-8">
                     <span>{post.nbComments}</span>

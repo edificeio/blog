@@ -29,7 +29,7 @@ const BlogPostList = () => {
   const { postsFilters } = usePostsFilter();
   const { counters } = useBlogCounter(blog?._id);
 
-  const { sidebarHighlightedPost } = useBlogState();
+  const { sidebarHighlightedPost, postsViewsCounters } = useBlogState();
 
   useEffect(() => {
     if (sidebarHighlightedPost) {
@@ -83,7 +83,12 @@ const BlogPostList = () => {
         </div>
       )}
       {posts?.map((post, index) => (
-        <PostPreview key={post._id} post={post} index={index} />
+        <PostPreview
+          key={post._id}
+          post={post}
+          index={index}
+          views={postsViewsCounters?.[post._id]}
+        />
       ))}
       {hasNextPage && (
         <div className="d-flex justify-content-center">
