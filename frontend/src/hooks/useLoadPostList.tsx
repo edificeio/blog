@@ -11,7 +11,7 @@ export const useLoadPostList = (loadFullList: boolean = false) => {
   // Load all posts with recurcive fetchNextPage calls.
   const {
     query: { fetchNextPage, hasNextPage, isSuccess, data },
-  } = usePostsList(blog?._id, PostState.PUBLISHED, false);
+  } = usePostsList(blog?._id, PostState.PUBLISHED, false, false);
 
   useEffect(() => {
     // Check if the second page of post is not null to set the page size. (not given by the backend)

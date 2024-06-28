@@ -121,6 +121,8 @@ export const PostPreview = ({ post, index, views }: PostPreviewProps) => {
     "blog-post-badge-highlight": post._id === sidebarHighlightedPost?._id,
   });
 
+  const showViews = creator || manager;
+
   return (
     <>
       <Card
@@ -229,7 +231,7 @@ export const PostPreview = ({ post, index, views }: PostPreviewProps) => {
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex gap-12 small text-gray-700 align-items-center ">
-                {typeof views === "number" ? (
+                {showViews && typeof views === "number" ? (
                   <>
                     <ViewsCounter viewsCounter={views} />
                     <span className="separator d-none d-md-block"></span>

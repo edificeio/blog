@@ -24,6 +24,7 @@ const BlogPostList = () => {
     blog?._id,
     publicView ? PostState.PUBLISHED : undefined,
     publicView ? false : undefined,
+    (creator || manager) && !publicView,
   );
 
   const { postsFilters } = usePostsFilter();

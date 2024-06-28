@@ -188,6 +188,7 @@ export const usePostsList = (
   blogId?: string,
   state?: PostState,
   withNbComments: boolean = true,
+  withViews: boolean = false,
 ) => {
   const params = useParams<{ blogId: string; slug: string }>();
   const { addPostsViewsCounters } = useStoreUpdaters();
@@ -229,14 +230,14 @@ export const usePostsList = (
   // Wait for the end of above infinite query to load views counters.
   useEffect(() => {
     const pagesNumber = query.data?.pages.length;
-    if (typeof pagesNumber === "number" && pagesNumber > 0) {
+    if (withViews && typeof pagesNumber === "number" && pagesNumber > 0) {
       const lastPageIds = query.data?.pages[pagesNumber - 1].map(
         (post) => post._id,
       ) as string[];
       loadCounters(lastPageIds);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data?.pages.length]);
+  }, [query.data?.pages.length, publicView]);
 
   return {
     posts: query.data?.pages.flatMap((page) => page) as Post[],
