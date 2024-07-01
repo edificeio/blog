@@ -9,10 +9,12 @@ import {
   Button,
   Card,
   Image,
+  ReactionSummary,
   ViewsCounter,
   getThumbnail,
 } from "@edifice-ui/react";
 import clsx from "clsx";
+import { ReactionSummaryData } from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -37,9 +39,21 @@ export type PostPreviewProps = {
    * (optional) Views counter
    */
   views?: number;
+  /**
+   * (optional) Reactions summary
+   */
+  reactions?: {
+    available: Array<"REACTION_1" | "REACTION_2" | "REACTION_3" | "REACTION_4">;
+    summary: ReactionSummaryData | undefined;
+  };
 };
 
-export const PostPreview = ({ post, index, views }: PostPreviewProps) => {
+export const PostPreview = ({
+  post,
+  index,
+  views,
+  reactions,
+}: PostPreviewProps) => {
   const { t } = useTranslation("blog");
   const navigate = useNavigate();
 
@@ -122,6 +136,7 @@ export const PostPreview = ({ post, index, views }: PostPreviewProps) => {
   });
 
   const showViews = creator || manager;
+  const showReactions = !publicView;
 
   return (
     <>
@@ -230,7 +245,16 @@ export const PostPreview = ({ post, index, views }: PostPreviewProps) => {
                 ))}
             </div>
             <div className="d-flex justify-content-between">
-              <div className="d-flex gap-12 small text-gray-700 align-items-center ">
+              <div className="d-flex gap-12 small text-gray-700 align-items-baseline ">
+                {showReactions && typeof reactions?.summary === "object" ? (
+                  <>
+                    <ReactionSummary
+                      availableReactions={reactions.available}
+                      summary={reactions.summary}
+                    />
+                    <span className="separator d-none d-md-block"></span>
+                  </>
+                ) : null}
                 {showViews && typeof views === "number" ? (
                   <>
                     <ViewsCounter viewsCounter={views} />

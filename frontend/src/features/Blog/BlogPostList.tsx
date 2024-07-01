@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { Button, EmptyScreen, usePaths } from "@edifice-ui/react";
+import { Button, EmptyScreen, usePaths, useReactions } from "@edifice-ui/react";
 import { useTranslation } from "react-i18next";
 
 import { PostPreview } from "~/components/PostPreview/PostPreview";
@@ -30,7 +30,10 @@ const BlogPostList = () => {
   const { postsFilters } = usePostsFilter();
   const { counters } = useBlogCounter(blog?._id);
 
-  const { sidebarHighlightedPost, postsViewsCounters } = useBlogState();
+  const { sidebarHighlightedPost, postsViewsCounters, postsReactionsSummary } =
+    useBlogState();
+
+  const { availableReactions } = useReactions("blog", "post");
 
   useEffect(() => {
     if (sidebarHighlightedPost) {
@@ -89,6 +92,10 @@ const BlogPostList = () => {
           post={post}
           index={index}
           views={postsViewsCounters?.[post._id]}
+          reactions={{
+            available: availableReactions,
+            summary: postsReactionsSummary?.[post._id],
+          }}
         />
       ))}
       {hasNextPage && (

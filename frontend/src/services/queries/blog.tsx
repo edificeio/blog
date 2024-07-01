@@ -16,6 +16,7 @@ import {
   loadBlogCounter,
   loadBlogPublic,
   loadPostsList,
+  loadPostsReactionsSummary,
   loadPostsViewsCounter,
   sessionHasWorkflowRights,
 } from "../api/blog";
@@ -182,6 +183,9 @@ export const useBlogCounter = (blogId?: string) => {
 /**
  * usePostsList query
  * @param blogId the blog id string
+ * @param state filter posts on their state
+ * @param withNbComments fetch comments number
+ * @param withViews fetch views number (implies additional requests to the backend)
  * @returns list of posts
  */
 export const usePostsList = (
@@ -191,7 +195,8 @@ export const usePostsList = (
   withViews: boolean = false,
 ) => {
   const params = useParams<{ blogId: string; slug: string }>();
-  const { addPostsViewsCounters } = useStoreUpdaters();
+  const { addPostsViewsCounters, addPostsReactionsSummary } =
+    useStoreUpdaters();
   const { postsFilters } = usePostsFilter();
   const { postPageSize } = useBlogState();
 
@@ -204,16 +209,20 @@ export const usePostsList = (
 
   const publicView = !!params.slug;
 
-  // Request the views counter for a list of posts id
-  const loadCounters = useCallback(
+  // Request the audience for a list of posts id
+  const loadAudience = useCallback(
     async (resourceIds: string[]) => {
       if (resourceIds.length > 0) {
-        const counters = await loadPostsViewsCounter(resourceIds);
-        // Add views counter to the store
+        // Load views counter and reactions summary, then add them to the store.
+        const [counters, summary] = await Promise.all([
+          loadPostsViewsCounter(resourceIds),
+          loadPostsReactionsSummary(resourceIds),
+        ]);
         addPostsViewsCounters(counters);
+        addPostsReactionsSummary(summary);
       }
     },
-    [addPostsViewsCounters],
+    [addPostsViewsCounters, addPostsReactionsSummary],
   );
 
   const query = useInfiniteQuery(
@@ -227,14 +236,14 @@ export const usePostsList = (
     ),
   );
 
-  // Wait for the end of above infinite query to load views counters.
+  // Wait for the end of above infinite query to load audience.
   useEffect(() => {
     const pagesNumber = query.data?.pages.length;
     if (withViews && typeof pagesNumber === "number" && pagesNumber > 0) {
       const lastPageIds = query.data?.pages[pagesNumber - 1].map(
         (post) => post._id,
       ) as string[];
-      loadCounters(lastPageIds);
+      loadAudience(lastPageIds);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.pages.length, publicView]);
