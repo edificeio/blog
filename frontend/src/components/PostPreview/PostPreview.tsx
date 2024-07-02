@@ -101,10 +101,8 @@ export const PostPreview = ({
   const handleViewsClick = async () => {
     if (!viewsDetails) {
       await loadViewsDetails();
-      toggleViewsModalOpen(true);
-    } else {
-      toggleViewsModalOpen(true);
     }
+    toggleViewsModalOpen(true);
   };
 
   const handleViewsModalClose = useCallback(async () => {
