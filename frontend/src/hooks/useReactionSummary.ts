@@ -21,7 +21,7 @@ function useReactionSummary(
     const summary = await loadReactionSummaries([postId]);
     setReactionSummary(summary[postId]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
+  }, []);
 
   const handleReactionOnChange = useCallback(
     async (newReaction: any) => {
