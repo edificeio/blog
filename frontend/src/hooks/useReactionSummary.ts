@@ -1,18 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 import { useReactions } from "@edifice-ui/react";
-import { ReactionSummaryData } from "edifice-ts-client";
 
-import { useBlogState } from "~/store";
+import { useBlogState, useStoreUpdaters } from "~/store";
 
-function useReactionSummary(
-  postId: string,
-  initialSummary?: ReactionSummaryData,
-) {
+function useReactionSummary(postId: string) {
   const { postsReactionsSummary } = useBlogState();
-  const [reactionSummary, setReactionSummary] = useState<
-    ReactionSummaryData | undefined
-  >(initialSummary);
+  const { addPostReactionSummary, addPostsReactionsSummary } =
+    useStoreUpdaters();
+
   const {
     availableReactions,
     loadReactionSummaries,
@@ -20,11 +16,20 @@ function useReactionSummary(
     applyReaction,
   } = useReactions("blog", "post");
 
-  const loadReactions = useCallback(async () => {
-    const summary = await loadReactionSummaries([postId]);
-    setReactionSummary(summary[postId]);
+  const reactionSummary = useMemo(() => {
+    return postsReactionsSummary?.[postId] ?? undefined;
+  }, [postId, postsReactionsSummary]);
+
+  const loadReactions = useCallback(
+    async (force?: boolean) => {
+      if (!postsReactionsSummary?.[postId] || force) {
+        const summary = await loadReactionSummaries([postId]);
+        addPostsReactionsSummary(summary);
+      }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    [postsReactionsSummary],
+  );
 
   const setUserReactionChoice = useCallback(
     async (newReaction: any) => {
@@ -44,22 +49,17 @@ function useReactionSummary(
           case "=":
             newSummary.userReaction = newReaction;
         }
-        setReactionSummary(newSummary);
+        addPostReactionSummary(newSummary, postId);
+        loadReactions(true);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [applyReaction, postId, reactionSummary],
   );
-
-  useEffect(() => {
-    if (!reactionSummary && postsReactionsSummary?.[postId]) {
-      setReactionSummary(postsReactionsSummary[postId]);
-    }
-  }, [postId, postsReactionsSummary, reactionSummary]);
 
   return {
     availableReactions,
     reactionSummary,
-    setReactionSummary,
     loadReactions,
     loadReactionSummaries,
     loadReactionDetails,

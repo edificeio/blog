@@ -39,18 +39,18 @@ export const PostAudience = ({ post, withViews }: PostAudienceProps) => {
   const loadViews = useCallback(async () => {
     const details = await loadPostViewsDetails(post._id);
     setViewsDetails(details);
-  }, [post._id, setViewsDetails]);
+  }, [post._id]);
 
   useEffect(() => {
     // Trigger a view once
     triggerViewOnPost(post._id);
+    loadReactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     withViews && loadViews();
-    loadReactions();
-  }, [withViews, loadViews, loadReactions]);
+  }, [loadViews, withViews]);
 
   const handleReactionChoiceOnChange = useCallback(
     async (choice?: ReactionType) => {
