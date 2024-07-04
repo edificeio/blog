@@ -51,7 +51,7 @@ function useReactionSummary(
   );
 
   useEffect(() => {
-    if (!reactionSummary && postsReactionsSummary[postId]) {
+    if (!reactionSummary && postsReactionsSummary?.[postId]) {
       setReactionSummary(postsReactionsSummary[postId]);
     }
   }, [postId, postsReactionsSummary, reactionSummary]);
