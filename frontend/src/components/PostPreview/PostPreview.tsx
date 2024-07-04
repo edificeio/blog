@@ -18,7 +18,11 @@ import {
   useToggle,
 } from "@edifice-ui/react";
 import clsx from "clsx";
-import { ReactionSummaryData, ViewsDetails } from "edifice-ts-client";
+import {
+  ReactionSummaryData,
+  ReactionType,
+  ViewsDetails,
+} from "edifice-ts-client";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -69,10 +73,12 @@ export const PostPreview = ({
   const { setActionBarPostId } = useStoreUpdaters();
   const { sidebarHighlightedPost, actionBarPostId } = useBlogState();
 
-  const { loadReactionDetails, setUserReactionChoice } = useReactionSummary(
-    post._id,
-    reactions?.summary,
-  );
+  const {
+    reactionSummary,
+    loadReactionDetails,
+    setUserReactionChoice,
+    loadReactions,
+  } = useReactionSummary(post._id, reactions?.summary);
   const {
     isReactionsModalOpen,
     handleReactionOnClick,
@@ -121,6 +127,15 @@ export const PostPreview = ({
   const handleViewsModalClose = useCallback(async () => {
     toggleViewsModalOpen(false);
   }, [toggleViewsModalOpen]);
+
+  const handleReactionChoiceOnChange = useCallback(
+    async (choice?: ReactionType) => {
+      // Update summary
+      await setUserReactionChoice(choice);
+      loadReactions();
+    },
+    [loadReactions, setUserReactionChoice],
+  );
 
   useEffect(() => {
     if (sidebarHighlightedPost?._id === post._id) {
@@ -291,10 +306,12 @@ export const PostPreview = ({
                   <div className="d-flex gap-4 align-items-center ">
                     {showReactions && typeof reactions?.summary === "object" ? (
                       <>
-                        <ReactionSummary
-                          summary={reactions.summary}
-                          onClick={handleReactionOnClick}
-                        />
+                        {reactionSummary && (
+                          <ReactionSummary
+                            summary={reactionSummary}
+                            onClick={handleReactionOnClick}
+                          />
+                        )}
                         <span className="separator d-none d-md-block"></span>
                         {isReactionsModalOpen && (
                           <ReactionModal
@@ -330,11 +347,13 @@ export const PostPreview = ({
                       </div>
                     )}
                   </div>
-                  {showReactions && typeof reactions?.summary === "object" ? (
+                  {showReactions &&
+                  reactions &&
+                  typeof reactionSummary === "object" ? (
                     <ReactionChoice
                       availableReactions={reactions.available}
-                      summary={reactions.summary}
-                      onChange={setUserReactionChoice}
+                      summary={reactionSummary}
+                      onChange={handleReactionChoiceOnChange}
                     />
                   ) : null}
                 </div>
