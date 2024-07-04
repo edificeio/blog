@@ -1,12 +1,15 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useReactions } from "@edifice-ui/react";
 import { ReactionSummaryData } from "edifice-ts-client";
+
+import { useBlogState } from "~/store";
 
 function useReactionSummary(
   postId: string,
   initialSummary?: ReactionSummaryData,
 ) {
+  const { postsReactionsSummary } = useBlogState();
   const [reactionSummary, setReactionSummary] = useState<
     ReactionSummaryData | undefined
   >(initialSummary);
@@ -46,6 +49,12 @@ function useReactionSummary(
     },
     [applyReaction, postId, reactionSummary],
   );
+
+  useEffect(() => {
+    if (!reactionSummary && postsReactionsSummary[postId]) {
+      setReactionSummary(postsReactionsSummary[postId]);
+    }
+  }, [postId, postsReactionsSummary, reactionSummary]);
 
   return {
     availableReactions,
