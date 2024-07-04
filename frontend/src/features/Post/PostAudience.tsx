@@ -15,16 +15,11 @@ import { Post } from "~/models/post";
 import { loadPostViewsDetails, triggerViewOnPost } from "~/services/api";
 
 export interface PostAudienceProps {
-  blogId: string;
   post: Post;
   withViews: boolean;
 }
 
-export const PostAudience = ({
-  /*blogId,*/
-  post,
-  withViews,
-}: PostAudienceProps) => {
+export const PostAudience = ({ post, withViews }: PostAudienceProps) => {
   // Variables for read mode
   const [viewsDetails, setViewsDetails] = useState<ViewsDetails | undefined>();
   const [isViewsModalOpen, setIsViewsModalOpen] = useState(false);
