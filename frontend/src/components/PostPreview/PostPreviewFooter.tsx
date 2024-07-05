@@ -83,7 +83,7 @@ export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
   return (
     <div className="d-flex justify-content-between">
       <div>
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center pb-8">
           {showAudience && !!postsReactionsSummary?.[post._id] && (
             <div className="post-footer-element">
               <ReactionSummary

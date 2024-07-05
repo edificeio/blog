@@ -74,7 +74,7 @@ export const PostAudience = ({ post, withViews }: PostAudienceProps) => {
       <div className="d-flex align-items-start align-items-md-center small text-gray-700">
         {reactionSummary && (
           <>
-            <div className="d-inline-flex flex-column-reverse flex-md-row align-items-start align-items-md-center gap-12 post-footer-element">
+            <div className="d-inline-flex flex-row align-items-center gap-12 post-footer-element">
               <ReactionChoice
                 availableReactions={availableReactions}
                 summary={reactionSummary}
