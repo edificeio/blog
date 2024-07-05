@@ -36,7 +36,7 @@ export interface PostContentProps {
 }
 
 export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
-  const { blog, publicView } = useBlog();
+  const { blog, publicView, isPublicBlog } = useBlog();
   // Get available actions and requirements for the post.
   const postActions = usePostActions(postContentActions, blogId, post);
   const {
@@ -147,7 +147,7 @@ export const PostContent = ({ blogId, post, comments }: PostContentProps) => {
     setIsEmptyContent(emptyContent);
   };
 
-  const withAudience = !publicView && mode === "read";
+  const withAudience = !isPublicBlog && mode === "read";
 
   return (
     <div className="post-container mb-48">

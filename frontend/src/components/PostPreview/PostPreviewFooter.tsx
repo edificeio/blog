@@ -35,7 +35,7 @@ export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
   const { t } = useTranslation("blog");
   const navigate = useNavigate();
 
-  const { publicView } = useBlog();
+  const { isPublicBlog } = useBlog();
   const { availableReactions } = useReactions("blog", "post");
   const { postsViewsCounters, postsReactionsSummary } = useBlogState();
   const { manager, creator } = useActionDefinitions([]);
@@ -77,14 +77,14 @@ export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
     navigate(`./post/${post?._id}`);
   };
 
+  const showAudience = !isPublicBlog;
   const showViews = creator || manager;
-  const showReactions = !publicView;
 
   return (
     <div className="d-flex justify-content-between">
       <div>
         <div className="d-flex align-items-center">
-          {showReactions && !!postsReactionsSummary?.[post._id] && (
+          {showAudience && !!postsReactionsSummary?.[post._id] && (
             <div className="post-footer-element">
               <ReactionSummary
                 summary={postsReactionsSummary?.[post._id]}
@@ -100,7 +100,7 @@ export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
               )}
             </div>
           )}
-          {showViews && !!views && (
+          {showAudience && showViews && !!views && (
             <div className="post-footer-element">
               <ViewsCounter viewsCounter={views} onClick={handleViewsClick} />
               {viewsModalOpen && (
@@ -120,7 +120,7 @@ export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
             </div>
           )}
         </div>
-        {showReactions && (
+        {showAudience && (
           <ReactionChoice
             availableReactions={availableReactions}
             summary={postsReactionsSummary?.[post._id]}
