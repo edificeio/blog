@@ -84,8 +84,8 @@ public class BlogResourcesProvider implements ResourcesProvider {
 			case "publish":
 			case "comments":
 			case "comment":
-			case "updateComment":
-			case "deleteComment":
+//			case "updateComment":	// Has its own custom filter
+//			case "deleteComment":	// Has its own custom filter
 			case "publishComment":
 				authorizeBlog(request, user, binding.getServiceMethod(), handler);
 				break;
