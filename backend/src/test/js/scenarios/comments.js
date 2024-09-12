@@ -1,6 +1,6 @@
 import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
 import {
-  checkStatus,
+  checkReturnCode,
   authenticateWeb,
   getUsersOfSchool,
   createDefaultStructure,
@@ -46,7 +46,7 @@ export function setup() {
   let context;
   describe("[Blog-Init] Initialize data", () => {
     const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const structure = createDefaultStructure();
+    const structure = createDefaultStructure("Pwet camembert 3", 'tiny');
     const role = createAndSetRole("Blog", session);
     const groups = [
       `Teachers from group ${structure.name}.`,
@@ -70,7 +70,7 @@ function initContext(structure, session) {
   const commentator = getRandomUserWithProfile(users, "Student", [author]);
   console.log("Author - ", author.login);
   console.log("Commentator - ", commentator.login);
-  const authorSession = authenticateWeb(author.login, "password");
+  const authorSession = authenticateWeb(author.login);
   const blog = createBlog(
     `Test - Blog de ${author.login} - ${Date.now()}`,
     authorSession,
@@ -94,9 +94,9 @@ function initContext(structure, session) {
   switchSession(commentatorSession);
   const comment = createComment(
     blog, 
-    post, 
-    commentatorSession,
-    "Commentaire initial"
+    post,
+    "Commentaire initial", 
+    commentatorSession
   );
   assertCondition(() => comment && comment.id, "Comment should be created");
 
@@ -119,22 +119,22 @@ export default (context) => {
 
   describe("[Blog] Needs to be author to update a comment", () => {
     switchSession(authorSession);
-    checkStatus(
-      updateComment(blog, post, comment, authorSession, "Commentaire vérolé"),
+    checkReturnCode(
+      updateComment(blog, post, comment, "Commentaire vérolé", authorSession),
       "cannot update another user's comment",
       401
     );
     switchSession(commentatorSession);
-    checkStatus(
-      updateComment(blog, post, commentatorSession, "Commentaire modifié"),
-      "can update comment as the author",
+    checkReturnCode(
+      updateComment(blog, post, comment, "Commentaire modifié", commentatorSession),
+      "can update comment as the commentator",
       200
     );
   });
 
   describe("[Blog] Does not need to be author to delete a comment", () => {
     switchSession(authorSession);
-    checkStatus(
+    checkReturnCode(
       deleteComment(blog, post, comment, authorSession),
       "can delete another user's comment",
       200

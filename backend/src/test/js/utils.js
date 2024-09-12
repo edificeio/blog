@@ -40,7 +40,7 @@ export function addShareToUser(blog, user, shareType, session) {
     const users = existingShares.users.checked || {};
     const shareTypes = typeof shareType==="string" ? [`blog.${shareType}`] : shareType.map(t=>`blog.${t}`);
     const sharesToAdd = existingShares.actions.filter(
-        action => shareTypes.findIndex(t=>t===action.displayName)
+        action => shareTypes.findIndex(t=>t===action.displayName) >= 0
     ).flatMap(t => t.name ?? []);
     users[user.id] = sharesToAdd;
     const newShares = {
@@ -112,7 +112,7 @@ export function getComments(blog, post, session) {
     return comments;
 }
 
-export function createComment(blog, post, session, text) {
+export function createComment(blog, post, text, session) {
     const headers = getHeaders(session);
     headers['content-type'] = 'application/json';
     const payload = JSON.stringify({
@@ -129,24 +129,18 @@ export function createComment(blog, post, session, text) {
     return null;
 }
 
-export function updateComment(blog, post, comment, session, text) {
+export function updateComment(blog, post, comment, text, session) {
     const headers = getHeaders(session);
     headers['content-type'] = 'application/json';
     const payload = JSON.stringify({
         comment: text,
     });
-    const res = http.put(`${rootUrl}/blog/comment/${blog.id}/${post.id}/${comment.id}`, payload, {headers});
-    if(res.status === 200) {
-        comment.comment = text;
-        return comment;
-    } else {
-        console.warn('Could not update comment');
-    }
-    return null;
+    return http.put(`${rootUrl}/blog/comment/${blog.id}/${post.id}/${comment.id}`, payload, {headers});
 }
 
 export function deleteComment(blog, post, comment, session) {
     console.log("Deleting comment.....")
     const res = http.del(`${rootUrl}/blog/comment/${blog.id}/${post.id}/${comment.id}`, {headers: getHeaders(session)});
     assertOk(res, 'delete comment');
+    return res;
 }
