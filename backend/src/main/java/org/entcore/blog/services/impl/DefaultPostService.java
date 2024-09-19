@@ -130,7 +130,9 @@ public class DefaultPostService implements PostService {
 							new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON, ContentTransformerFormat.PLAINTEXT)),
 							b.getInteger("contentVersion", 0),
 							b.getString("content", ""),
-							null),
+							null,
+							"post",
+							post.getString("_id", "")),
 						request);
 		} else {
 			contentTransformerResponseFuture = Future.succeededFuture();
