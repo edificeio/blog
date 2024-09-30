@@ -34,7 +34,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
         children: [
           // This page displays all information about the blog and its list of posts.
           {
-            path: "",
+            index: true,
             async lazy() {
               const { Component, loader } = await import("~/routes/blog");
               return {
@@ -106,7 +106,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => [
     children: [
       // This page displays a public blog.
       {
-        path: "",
+        index: true,
         async lazy() {
           const { Component, loader } = await import("~/routes/public-blog");
           return {
