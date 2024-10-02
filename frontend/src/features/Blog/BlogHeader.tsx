@@ -11,7 +11,9 @@ export interface BlogProps {
 export const BlogHeader = ({ blog, readonly = false }: BlogProps) => {
   const { currentApp } = useOdeClient();
   return (
-    <AppHeader render={() => <>{!readonly && <BlogActionBar blog={blog} />}</>}>
+    <AppHeader
+      render={() => (!readonly ? <BlogActionBar blog={blog} /> : null)}
+    >
       {currentApp && <Breadcrumb app={currentApp} name={blog.title} />}
     </AppHeader>
   );
