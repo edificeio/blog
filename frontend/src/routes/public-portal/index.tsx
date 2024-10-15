@@ -1,12 +1,12 @@
-import { useTrashedResource } from "@edifice-ui/react";
-import { QueryClient } from "@tanstack/react-query";
-import { LoaderFunctionArgs, Outlet, useLoaderData } from "react-router-dom";
+import { useTrashedResource } from '@edifice-ui/react';
+import { QueryClient } from '@tanstack/react-query';
+import { LoaderFunctionArgs, Outlet, useLoaderData } from 'react-router-dom';
 
-import { blogActions } from "~/config/blogActions";
-import { useBlogErrorToast } from "~/hooks/useBlogErrorToast";
-import { Blog } from "~/models/blog";
-import { availableActionsQuery, blogPublicQuery } from "~/services/queries";
-import { disableLoginPageRedirection } from "~/utils/disableLoginPageRedirection";
+import { blogActions } from '~/config/blogActions';
+import { useBlogErrorToast } from '~/hooks/useBlogErrorToast';
+import { Blog } from '~/models/blog';
+import { availableActionsQuery, blogPublicQuery } from '~/services/queries';
+import { disableLoginPageRedirection } from '~/utils/disableLoginPageRedirection';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -16,7 +16,7 @@ export const loader =
       const { slug } = params;
       const queryBlogPublic = blogPublicQuery(slug as string);
       const blog = await queryClient.fetchQuery(queryBlogPublic);
-      if (!blog._id) throw "Unexpected error";
+      if (!blog._id) throw 'Unexpected error';
 
       const actions = availableActionsQuery(blogActions);
 

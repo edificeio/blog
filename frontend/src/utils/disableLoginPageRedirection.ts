@@ -1,4 +1,4 @@
-import { ERROR_CODE } from "edifice-ts-client";
+import { ERROR_CODE } from 'edifice-ts-client';
 
 /**
  * This function wraps a loader for ReactRouter,
@@ -9,7 +9,7 @@ import { ERROR_CODE } from "edifice-ts-client";
 export async function disableLoginPageRedirection<T>(
   lazyLoaderFunction: () => Promise<T>,
 ) {
-  const rootElement = document.getElementById("root");
+  const rootElement = document.getElementById('root');
 
   const preventRedirecting = (event: Event) => {
     event.preventDefault();

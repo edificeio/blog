@@ -1,7 +1,6 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
 
-import { ArrowRight, MessageInfo } from "@edifice-ui/icons";
+import { ArrowRight, MessageInfo } from '@edifice-ui/icons';
 import {
   Button,
   ReactionChoice,
@@ -11,18 +10,18 @@ import {
   ViewsModal,
   useReactions,
   useToggle,
-} from "@edifice-ui/react";
-import { ViewsDetails } from "edifice-ts-client";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+} from '@edifice-ui/react';
+import { ViewsDetails } from 'edifice-ts-client';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
-import { useActionDefinitions } from "~/features/ActionBar/useActionDefinitions";
-import useReactionModal from "~/hooks/useReactionModal";
-import useReactionSummary from "~/hooks/useReactionSummary";
-import { Post } from "~/models/post";
-import { loadPostViewsDetails } from "~/services/api";
-import { useBlog } from "~/services/queries";
-import { useBlogState } from "~/store";
+import { useActionDefinitions } from '~/features/ActionBar/useActionDefinitions';
+import useReactionModal from '~/hooks/useReactionModal';
+import useReactionSummary from '~/hooks/useReactionSummary';
+import { Post } from '~/models/post';
+import { loadPostViewsDetails } from '~/services/api';
+import { useBlog } from '~/services/queries';
+import { useBlogState } from '~/store';
 
 export type PostPreviewFooterProps = {
   /**
@@ -32,11 +31,11 @@ export type PostPreviewFooterProps = {
 };
 
 export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
-  const { t } = useTranslation("blog");
+  const { t } = useTranslation('blog');
   const navigate = useNavigate();
 
   const { isPublicBlog } = useBlog();
-  const { availableReactions } = useReactions("blog", "post");
+  const { availableReactions } = useReactions('blog', 'post');
   const { postsViewsCounters, postsReactionsSummary } = useBlogState();
   const { manager, creator } = useActionDefinitions([]);
 
@@ -141,7 +140,7 @@ export const PostPreviewFooter = ({ post }: PostPreviewFooterProps) => {
           className="align-self-end justify-self-end"
           onClick={handleClickGoDetail}
         >
-          {t("blog.post.preview.readMore")}
+          {t('blog.post.preview.readMore')}
         </Button>
       </div>
     </div>
