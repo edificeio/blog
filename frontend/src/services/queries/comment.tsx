@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { useToast } from '@edifice.io/react';
+import { useTranslation } from 'react-i18next';
 import { postsListQuery } from '.';
 import {
   createComment,
@@ -7,7 +9,6 @@ import {
   loadComments,
   updateComment,
 } from '../api';
-import { Comment } from '~/models/comment';
 
 /** Query comments data. */
 export const commentListQuery = (blogId: string, postId: string) => {
@@ -18,34 +19,69 @@ export const commentListQuery = (blogId: string, postId: string) => {
 };
 
 export const useCreateComment = (blogId: string, postId: string) => {
+  const { t } = useTranslation();
+
+  const toast = useToast();
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ content }: { content: string }) =>
       createComment(blogId, postId, content),
-    onSuccess: () =>
+    onSuccess: () => {
       Promise.all([
         queryClient.invalidateQueries(commentListQuery(blogId, postId)),
         queryClient.invalidateQueries(postsListQuery(blogId)),
-      ]),
+      ]);
+      toast.success(t('blog.create.comment.success'));
+    },
+    onError: (error) => {
+      toast.error(t('blog.create.comment.error'));
+      console.error(error);
+    },
   });
 };
 
 export const useUpdateComment = (blogId: string, postId: string) => {
+  const { t } = useTranslation();
+
+  const toast = useToast();
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ comment }: { comment: Comment }) =>
-      updateComment(blogId, postId, comment),
-    onSuccess: () =>
-      queryClient.invalidateQueries(commentListQuery(blogId, postId)),
+    mutationFn: ({
+      comment,
+      commentId,
+    }: {
+      comment: string;
+      commentId: string;
+    }) => updateComment(blogId, postId, comment, commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(commentListQuery(blogId, postId));
+      toast.success(t('blog.update.comment.success'));
+    },
+    onError: (error) => {
+      toast.error(t('blog.update.comment.error'));
+      console.error(error);
+    },
   });
 };
 
 export const useDeleteComment = (blogId: string, postId: string) => {
+  const { t } = useTranslation();
+
+  const toast = useToast();
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ commentId }: { commentId: string }) =>
       deleteComment(blogId, postId, commentId),
-    onSuccess: () =>
-      queryClient.invalidateQueries(commentListQuery(blogId, postId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries(commentListQuery(blogId, postId));
+      toast.success(t('blog.delete.comment.success'));
+    },
+    onError: (error) => {
+      toast.error(t('blog.delete.comment.error'));
+      console.error(error);
+    },
   });
 };
