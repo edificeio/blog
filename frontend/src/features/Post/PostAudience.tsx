@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { ReactionType, ViewsDetails } from '@edifice.io/client';
 import {
   ReactionChoice,
   ReactionModal,
@@ -7,7 +8,6 @@ import {
   ViewsCounter,
   ViewsModal,
 } from '@edifice.io/react/audience';
-import { ReactionType, ViewsDetails } from '@edifice.io/client';
 
 import useReactionModal from '~/hooks/useReactionModal';
 import useReactionSummary from '~/hooks/useReactionSummary';
@@ -42,6 +42,7 @@ export const PostAudience = ({ post, withViews }: PostAudienceProps) => {
 
   const loadViews = useCallback(async () => {
     const details = await loadPostViewsDetails(post._id);
+    console.log({ details });
     setViewsDetails(details);
     if (details) {
       addPostsViewsCounters({ [post._id]: details.viewsCounter });
