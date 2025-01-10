@@ -78,6 +78,7 @@ doInit () {
       BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
     fi
   fi
+}
 
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
