@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.5-develop-community-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.6-develop-community-SNAPSHOT</entCoreVersion>
         <web-utils.version>3.1-develop-pedago-SNAPSHOT</web-utils.version>
         <junitVersion>4.13.2</junitVersion>
         <explorerVersion>2.2-develop-pedago-SNAPSHOT</explorerVersion>
