@@ -26,12 +26,11 @@ package org.entcore.blog;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.transformer.ContentTransformerFactoryProvider;
 import fr.wseduc.transformer.IContentTransformerClient;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
-import static java.util.Optional.empty;
 import org.entcore.blog.controllers.*;
 import org.entcore.blog.events.BlogSearchingEvents;
 import org.entcore.blog.explorer.BlogExplorerPlugin;
@@ -63,6 +62,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+
 public class Blog extends BaseServer {
 
     public static final String APPLICATION = "blog";
@@ -75,7 +76,15 @@ public class Blog extends BaseServer {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-        super.start(startPromise);
+	    final Promise<Void> initBlogPromise = Promise.promise();
+	    super.start(initBlogPromise);
+	    initBlogPromise.future()
+			    .compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "content-transformer"))
+			    .compose(blogConfigMap -> initBlog(blogConfigMap))
+			    .onComplete(startPromise);
+    }
+
+	public Future<Void> initBlog(final Map<String, Object> blogConfigMap) {
         setDefaultResourceFilter(new BlogResourcesProvider());
 
         MongoDbConf.getInstance().setCollection("blogs");
@@ -100,13 +109,15 @@ public class Blog extends BaseServer {
         conf.setResourceIdLabel("id");
 
         ContentTransformerFactoryProvider.init(vertx);
-        final JsonObject contentTransformerConfig = getContentTransformerConfig(vertx).orElse(null);
+        final JsonObject contentTransformerConfig = getContentTransformerConfig((String) blogConfigMap.get("content-transformer")).orElse(null);
         final IContentTransformerClient contentTransformerClient = ContentTransformerFactoryProvider.getFactory("blog", contentTransformerConfig).create();
         final IContentTransformerEventRecorder contentTransformerEventRecorder = new ContentTransformerEventRecorderFactory("blog", contentTransformerConfig).create();
-
-        blogPlugin = BlogExplorerPlugin.create(securedActions);
-
-        final PostExplorerPlugin postPlugin = blogPlugin.postPlugin();
+		try {
+			blogPlugin = BlogExplorerPlugin.create(securedActions);
+		} catch (Exception e) {
+			return Future.failedFuture(e);
+		}
+		final PostExplorerPlugin postPlugin = blogPlugin.postPlugin();
         final MongoDb mongo = MongoDb.getInstance();
         AudienceHelper audienceHelper = new AudienceHelper(vertx);
         final PostService postService = new DefaultPostService(mongo,config.getInteger("post-search-word-min-size", 4), PostController.LIST_ACTION, postPlugin, contentTransformerClient, contentTransformerEventRecorder, audienceHelper);
@@ -128,17 +139,15 @@ public class Blog extends BaseServer {
         BrokerProxyUtils.addBrokerProxy(new ShareBrokerListenerImpl(this.securedActions, shareService), vertx, new AddressParameter("application", "blog"));
     }
 
-    private Optional<JsonObject> getContentTransformerConfig(final Vertx vertx) {
-        final LocalMap<Object, Object> server= vertx.sharedData().getLocalMap("server");
-        final String rawConfiguration = (String) server.get("content-transformer");
-        final Optional<JsonObject> contentTransformerConfig;
-        if(rawConfiguration == null) {
-            contentTransformerConfig = empty();
-        } else {
-            contentTransformerConfig = Optional.of(new JsonObject(rawConfiguration));
-        }
-        return contentTransformerConfig;
-    }
+	private Optional<JsonObject> getContentTransformerConfig(final String contentTransformerRawConfig) {
+		final Optional<JsonObject> contentTransformerConfig;
+		if(contentTransformerRawConfig == null) {
+			contentTransformerConfig = empty();
+		} else {
+			contentTransformerConfig = Optional.of(new JsonObject(contentTransformerRawConfig));
+		}
+		return contentTransformerConfig;
+	}
 
     @Override
     public void stop() throws Exception {
