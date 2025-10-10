@@ -31,7 +31,7 @@
     <properties>
         <entCoreVersion>6.8-zookeeper-SNAPSHOT</entCoreVersion>
         <junitVersion>4.13.2</junitVersion>
-        <explorerVersion>2.3-SNAPSHOT</explorerVersion>
+        <explorerVersion>2.3-zookeeper-SNAPSHOT</explorerVersion>
     </properties>
 
     <dependencies>
@@ -76,6 +76,13 @@
             <groupId>com.opendigitaleducation</groupId>
             <artifactId>explorer</artifactId>
             <version>${explorerVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.opendigitaleducation</groupId>
+            <artifactId>explorer</artifactId>
+            <version>${explorerVersion}</version>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
