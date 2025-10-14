@@ -51,7 +51,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray groups, String exportPath, String locale, String host, Handler<Boolean> handler)
+								JsonArray groups, String exportPath, String locale, String host, Handler<JsonObject> handler)
 	{
 		final Bson findByAuthor = eq("author.userId", userId);
 		final Bson findByShared = or(
@@ -123,18 +123,19 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 													@Override
 													public void handle(Boolean bool)
 													{
-														exportFiles(results, path, new HashSet<String>(), exported, handler);
+														exportFiles(results, path, new HashSet<>(), exported, handler);
 													}
 												};
 
-												if(exportDocuments == true)
-													exportDocumentsDependancies(results, path, finish);
-												else
-													finish.handle(Boolean.TRUE);
+												if(exportDocuments) {
+                          exportDocumentsDependancies(results, path, finish);
+                        } else {
+                          finish.handle(exported.get());
+                        }
 											}
 											else
 											{
-												handler.handle(exported.get());
+												handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 											}
 										}
 									});
@@ -142,7 +143,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 								else
 								{
 									log.error("Blog : Could not proceed query " + query2.encode(), event2.body().getString("message"));
-									handler.handle(exported.get());
+									handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 								}
 							}
 						});
@@ -150,7 +151,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 					else
 					{
 						log.error("Blog : Could not proceed query " + query.encode(), event.body().getString("message"));
-						handler.handle(exported.get());
+						handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 					}
 				}
 			});
