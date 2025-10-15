@@ -118,14 +118,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 										{
 											if (path != null)
 											{
-												Handler<Boolean> finish = new Handler<Boolean>()
-												{
-													@Override
-													public void handle(Boolean bool)
-													{
-														exportFiles(results, path, new HashSet<>(), exported, handler);
-													}
-												};
+												Handler<Boolean> finish = bool -> exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new JsonObject().put("ok", e).put("path", exportPath)));
 
 												if(exportDocuments) {
                           exportDocumentsDependancies(results, path, finish);
