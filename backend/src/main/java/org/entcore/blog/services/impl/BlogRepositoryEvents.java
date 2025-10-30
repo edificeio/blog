@@ -33,6 +33,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.position.ExportResourceResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +52,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray groups, String exportPath, String locale, String host, Handler<JsonObject> handler)
+								JsonArray groups, String exportPath, String locale, String host, Handler<ExportResourceResult> handler)
 	{
 		final Bson findByAuthor = eq("author.userId", userId);
 		final Bson findByShared = or(
@@ -118,7 +119,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 										{
 											if (path != null)
 											{
-												Handler<Boolean> finish = bool -> exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new JsonObject().put("ok", e).put("path", exportPath)));
+												Handler<Boolean> finish = bool -> exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new ExportResourceResult(e, exportPath)));
 
 												if(exportDocuments) {
                           exportDocumentsDependancies(results, path, finish);
@@ -128,7 +129,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 											}
 											else
 											{
-												handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+												handler.handle(new ExportResourceResult(exported.get(), exportPath));
 											}
 										}
 									});
@@ -136,7 +137,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 								else
 								{
 									log.error("Blog : Could not proceed query " + query2.encode(), event2.body().getString("message"));
-									handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+									handler.handle(new ExportResourceResult(exported.get(), exportPath));
 								}
 							}
 						});
@@ -144,7 +145,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 					else
 					{
 						log.error("Blog : Could not proceed query " + query.encode(), event.body().getString("message"));
-						handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+						handler.handle(new ExportResourceResult(exported.get(), exportPath));
 					}
 				}
 			});
