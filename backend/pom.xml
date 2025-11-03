@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.edifice</groupId>
         <artifactId>app-parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.entcore</groupId>
@@ -90,6 +90,13 @@
             <artifactId>gatling-charts-highcharts</artifactId>
             <version>${gatlingHighchartsVersion}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>mod-mongo-persistor</artifactId>
+            <version>4.1-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
         </dependency>
     </dependencies>
 </project>
