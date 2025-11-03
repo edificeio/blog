@@ -79,7 +79,7 @@ public class Blog extends BaseServer {
 	    final Promise<Void> initBlogPromise = Promise.promise();
 	    super.start(initBlogPromise);
 	    initBlogPromise.future()
-			    .compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "content-transformer"))
+			    .compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "content-transformer"))
 			    .compose(blogConfigMap -> initBlog(blogConfigMap))
 			    .onComplete(startPromise);
     }
