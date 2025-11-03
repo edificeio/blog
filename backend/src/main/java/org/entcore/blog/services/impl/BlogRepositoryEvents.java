@@ -33,7 +33,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
