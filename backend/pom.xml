@@ -29,10 +29,10 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.10-SNAPSHOT</entCoreVersion>
-        <web-utils.version>3.2-SNAPSHOT</web-utils.version>
+        <entCoreVersion>6.10-develop-b2school-SNAPSHOT</entCoreVersion>
+        <web-utils.version>3.2-develop-b2school-SNAPSHOT</web-utils.version>
         <junitVersion>4.13.2</junitVersion>
-        <explorerVersion>2.4-SNAPSHOT</explorerVersion>
+        <explorerVersion>2.4-develop-b2school-SNAPSHOT</explorerVersion>
     </properties>
 
     <dependencies>
