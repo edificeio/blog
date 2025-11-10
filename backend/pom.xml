@@ -32,7 +32,7 @@
         <entCoreVersion>6.12-SNAPSHOT</entCoreVersion>
         <web-utils.version>3.2-SNAPSHOT</web-utils.version>
         <junitVersion>4.13.2</junitVersion>
-        <explorerVersion>2.4-SNAPSHOT</explorerVersion>
+        <explorerVersion>2.4-develop-b2school-SNAPSHOT</explorerVersion>
     </properties>
 
     <dependencies>
