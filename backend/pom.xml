@@ -31,7 +31,7 @@
     <properties>
         <entCoreVersion>6.10-zookeeper-SNAPSHOT</entCoreVersion>
         <junitVersion>4.13.2</junitVersion>
-        <explorerVersion>2.3-zookeeper-SNAPSHOT</explorerVersion>
+        <explorerVersion>2.4-zookeeper-SNAPSHOT</explorerVersion>
     </properties>
 
     <dependencies>
