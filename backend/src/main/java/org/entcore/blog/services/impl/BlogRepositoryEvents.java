@@ -119,7 +119,7 @@ public class BlogRepositoryEvents extends MongoDbRepositoryEvents {
 										{
 											if (path != null)
 											{
-												Handler<Boolean> finish = bool -> exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new ExportResourceResult(e, exportPath)));
+												Handler<Boolean> finish = bool -> exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new ExportResourceResult(e, path)));
 
 												if(exportDocuments) {
                           exportDocumentsDependancies(results, path, finish);
