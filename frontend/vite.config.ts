@@ -125,9 +125,19 @@ export default ({ mode }: { mode: string }) => {
       },
       server: {
         deps: {
-          inline: ['@edifice.io/react'],
+          inline: [/@edifice\.io\//, 'ode-explorer'],
         },
       },
+      alias: [
+        {
+          find: /\.svg(\?.*)?$/,
+          replacement: resolve(__dirname, './src/mocks/svg-stub.ts'),
+        },
+        {
+          find: /\.(png|jpe?g|gif|webp)$/,
+          replacement: resolve(__dirname, './src/mocks/asset-stub.ts'),
+        },
+      ],
     },
   });
 };
