@@ -5,10 +5,12 @@ const defaultConfig = {
   externals: [
     'react',
     'react-dom',
+    'react-dom/client',
     'react/jsx-runtime',
     '@edifice.io/react',
     '@edifice.io/client',
     'ode-explorer',
+    'ode-explorer/lib',
   ],
 };
 
@@ -45,12 +47,11 @@ export function externalLibs({
                 const isSubPath = externals.some((ext) =>
                   id.startsWith(`${ext}/`),
                 );
+                // Exact match on a declared external → keep as-is (no .js appended)
+                if (externals.includes(id)) return id;
                 if (!isSubPath) return id;
 
-                if (id === 'ode-explorer/lib' || id === 'ode-explorer') {
-                  return 'ode-explorer/dist/lib/index.js';
-                }
-
+                // Sub-paths resolved by import map prefix: add .js extension
                 let resolved = id.replace('/dist/', '/');
                 const hasExtension = /\.\w+$/.test(resolved.split('/').pop()!);
                 if (!hasExtension) {
