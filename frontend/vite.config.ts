@@ -7,6 +7,7 @@ import {
   hashEdificeBootstrap,
   queryHashVersion,
 } from './plugins/vite-plugin-edifice';
+import { externalLibs } from './plugins/vite-plugin-external-libs';
 
 export default ({ mode }: { mode: string }) => {
   // Checking environement files
@@ -92,6 +93,7 @@ export default ({ mode }: { mode: string }) => {
       hashEdificeBootstrap({
         hash: queryHashVersion,
       }),
+      externalLibs(),
     ],
 
     build: {
@@ -123,9 +125,19 @@ export default ({ mode }: { mode: string }) => {
       },
       server: {
         deps: {
-          inline: ['@edifice.io/react'],
+          inline: [/@edifice\.io\//, 'ode-explorer'],
         },
       },
+      alias: [
+        {
+          find: /\.svg(\?.*)?$/,
+          replacement: resolve(__dirname, './src/mocks/svg-stub.ts'),
+        },
+        {
+          find: /\.(png|jpe?g|gif|webp)$/,
+          replacement: resolve(__dirname, './src/mocks/asset-stub.ts'),
+        },
+      ],
     },
   });
 };
