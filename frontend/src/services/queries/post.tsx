@@ -12,6 +12,7 @@ import {
   loadPost,
   loadPostMetadata,
   loadPublicPost,
+  pinPost,
   publishPost,
   savePost,
 } from '../api/post';
@@ -131,6 +132,24 @@ export const useGoUpPost = (blogId: string, postId: string) => {
     mutationFn: () => goUpPost(blogId, postId),
     onSuccess: () => {
       toast.success(t('blog.post.goup.success'));
+      // Publishing a post invalidates some queries.
+      return queryClient.invalidateQueries({
+        queryKey: blogQueryKeys.postsList(blogId),
+      });
+    },
+  });
+};
+
+export const usePinPost = (blogId: string, postId: string, pinned: boolean) => {
+  const toast = useToast();
+  const { t } = useTranslation('blog');
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => pinPost(blogId, postId, pinned),
+    onSuccess: () => {
+      toast.success(
+        pinned ? t('blog.post.pin.success') : t('blog.post.unpin.success'),
+      );
       // Publishing a post invalidates some queries.
       return queryClient.invalidateQueries({
         queryKey: blogQueryKeys.postsList(blogId),

@@ -78,6 +78,14 @@ export function goUpPost(blogId: string, postId: string) {
   );
 }
 
+export function pinPost(blogId: string, postId: string, pinned: boolean) {
+  return checkHttpError(
+    odeServices.http().putJson<PostMetadata>(`/blog/post/${blogId}/${postId}`, {
+      pinned,
+    }),
+  );
+}
+
 export function publishPost(
   blogId: string,
   post: Post,
