@@ -83,7 +83,8 @@ public class DefaultPostService implements PostService {
 			.put("modified", 1)
 			.put("views", 1)
 			.put("firstPublishDate", 1)
-			.put("contentVersion", 1);
+			.put("contentVersion", 1)
+			.put("pinned", 1);
 	private static final JsonObject keysWithTransformedContent = defaultKeys.copy().put(TRANSFORMED_CONTENT_DB_FIELD_NAME, 1);
 
 
@@ -225,8 +226,13 @@ public class DefaultPostService implements PostService {
 					validatedPost.put("sorted", now);
 				}
 
-				//if user is author and is not sorting the post, draft state
-				if (!sorting && user.getUserId().equals(postFromDb.getJsonObject("author", new JsonObject()).getString("userId"))) {
+				final boolean pinned = post.containsKey("pinned");
+				if (pinned) {
+					validatedPost.put("pinned", post.getBoolean("pinned", false));
+				}
+
+				//if user is author and is not sorting or pinning the post, draft state
+				if (!sorting && !pinned && user.getUserId().equals(postFromDb.getJsonObject("author", new JsonObject()).getString("userId"))) {
 					validatedPost.put("state", StateType.DRAFT.name());
 				}
 
