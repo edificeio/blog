@@ -226,13 +226,13 @@ public class DefaultPostService implements PostService {
 					validatedPost.put("sorted", now);
 				}
 
-				final boolean pinned = post.containsKey("pinned");
-				if (pinned) {
+				final boolean hasPinnedKey = post.containsKey("pinned");
+				if (hasPinnedKey) {
 					validatedPost.put("pinned", post.getBoolean("pinned", false));
 				}
 
 				//if user is author and is not sorting or pinning the post, draft state
-				if (!sorting && !pinned && user.getUserId().equals(postFromDb.getJsonObject("author", new JsonObject()).getString("userId"))) {
+				if (!sorting && !hasPinnedKey && user.getUserId().equals(postFromDb.getJsonObject("author", new JsonObject()).getString("userId"))) {
 					validatedPost.put("state", StateType.DRAFT.name());
 				}
 
@@ -264,14 +264,22 @@ public class DefaultPostService implements PostService {
 							final JsonObject blogRef = postFromDb.getJsonObject("blog");
 							final String blogId = blogRef.getString("$id");
 							plugin.setIngestJobStateAndVersion(validatedPost, IngestJobState.TO_BE_SENT, version);
-							plugin.notifyUpsert(blogId, user, validatedPost.put("_id", postId)).onComplete(e->{
-								if(e.failed()){
+							final Runnable notifyAndRespond = () -> plugin.notifyUpsert(blogId, user, validatedPost.put("_id", postId)).onComplete(e -> {
+								if (e.failed()) {
 									log.error("Failed to notify upsert post: ", e.cause());
 								}
 								// TODO JBER update here status in mongo
 								final JsonObject r = new JsonObject().put("state", validatedPost.getString("state", postFromDb.getString("state")));
 								result.handle(new Either.Right<>(r));
 							});
+							// When pinning, unpin previous pinned post in the same blog first
+							if (hasPinnedKey && Boolean.TRUE.equals(post.getBoolean("pinned"))) {
+								final Bson unpinQuery = and(eq("blog.$id", blogId), ne("_id", postId), eq("pinned", true));
+								final MongoUpdateBuilder unpinModifier = new MongoUpdateBuilder().unset("pinned");
+								mongo.update(POST_COLLECTION, MongoQueryBuilder.build(unpinQuery), unpinModifier.build(), false, true, MongoDbAPI.WriteConcern.MAJORITY, unpinResult -> notifyAndRespond.run());
+							} else {
+								notifyAndRespond.run();
+							}
 						} else {
 							result.handle(new Either.Left<>(updateResponse.body().getString("message", "")));
 						}
@@ -461,7 +469,7 @@ public class DefaultPostService implements PostService {
 												 final Handler<Either<String, JsonArray>> result) {
 		final Bson accessQuery = and(eq("blog.$id", blogId), eq("state", StateType.PUBLISHED.name()));
 		final Bson query = getQueryListBuilder(search, result, accessQuery);
-		final JsonObject sort = new JsonObject().put("sorted", -1);
+		final JsonObject sort = new JsonObject().put("pinned", -1).put("sorted", -1);
 		final JsonObject projection = defaultKeys.copy();
 		//projection.remove("content");
 		final Handler<Message<JsonObject>> finalHandler = event -> {
@@ -510,7 +518,7 @@ public class DefaultPostService implements PostService {
 	public void list(String blogId, final StateType state, final UserInfos user, final Integer page, final int limit, final String search,
 				final Handler<Either<String, JsonArray>> result) {
 		Bson accessQuery = and(eq("blog.$id", blogId), eq("state", state.name()));
-		final JsonObject sort = new JsonObject().put("sorted", -1);
+		final JsonObject sort = new JsonObject().put("pinned", -1).put("sorted", -1);
 		final JsonObject projection = defaultKeys.copy();
 		projection.remove("content");
 
@@ -578,7 +586,7 @@ public class DefaultPostService implements PostService {
 		}
 
 		final Bson isManagerQuery = getDefautQueryBuilderForList(blogId, user,true);
-		final JsonObject sort = new JsonObject().put("sorted", -1);
+		final JsonObject sort = new JsonObject().put("pinned", -1).put("sorted", -1);
 		final JsonObject projection = defaultKeys.copy();
 		// If the user doesn't want the content we do not fetch it from the database
 		if(!postProjection.isWithContent()) {
