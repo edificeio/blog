@@ -66,6 +66,18 @@ export const PostPreviewHeader = ({ post }: PostPreviewHeaderProps) => {
               {t('blog.filters.submitted')}
             </Badge>
           )}
+          {post.pinned && (
+            <Badge
+              className="ms-8"
+              variant={{
+                type: 'content',
+                level: 'warning',
+                background: true,
+              }}
+            >
+              {t('post.pinned')}
+            </Badge>
+          )}
         </div>
         <div className="text-gray-700 small column-gap-12 d-flex flex-column flex-md-row align-items-md-center">
           <span>{post.author.username}</span>
