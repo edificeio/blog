@@ -111,19 +111,13 @@ export const PostPreviewActionBar = ({
   };
 
   const handlePinSuccess = () => {
-    post.pinned = true;
-
-    pinAction();
-
+    pinAction(true);
     togglePinModalOpen(false);
     setActionBarPostId();
   };
 
   const handleUnpinSuccess = () => {
-    post.pinned = false;
-
-    pinAction();
-
+    pinAction(false);
     togglePinModalOpen(false);
     setActionBarPostId();
   };

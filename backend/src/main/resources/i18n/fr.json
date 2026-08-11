@@ -99,7 +99,7 @@
   "confirm.pin.body": "Ce billet apparaîtra en haut de votre blog pour tous les lecteurs. Vous ne pouvez en épingler qu'un seul à la fois : si vous en choisissez un nouveau, il remplacera automatiquement le précédent.",
   "confirm.pin.ok": "Épingler",
   "confirm.unpin.header": "Retirer l'épingle",
-  "confirm.unpin.body": "L'épingle de ce billet sera retiré. Le billet s'affichera de nouveau dans la liste chronologiquement.",
+  "confirm.unpin.body": "L'épingle de ce billet sera retirée. Le billet s'affichera de nouveau dans la liste chronologiquement.",
   "confirm.unpin.ok": "Retirer",
   "draft": "Brouillon",
   "draft.empty": "Votre brouillon est vide",

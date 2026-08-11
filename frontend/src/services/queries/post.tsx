@@ -140,13 +140,13 @@ export const useGoUpPost = (blogId: string, postId: string) => {
   });
 };
 
-export const usePinPost = (blogId: string, postId: string, pinned: boolean) => {
+export const usePinPost = (blogId: string, postId: string) => {
   const toast = useToast();
   const { t } = useTranslation('blog');
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => pinPost(blogId, postId, pinned),
-    onSuccess: () => {
+    mutationFn: (pinned: boolean) => pinPost(blogId, postId, pinned),
+    onSuccess: (_data, pinned) => {
       toast.success(
         pinned ? t('blog.post.pin.success') : t('blog.post.unpin.success'),
       );
