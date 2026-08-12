@@ -63,6 +63,18 @@ main {
   border-width: 0.2rem;
 }
 
+.card.blog-post-pinned {
+  border-color: var(--edifice-purple-300) !important;
+  border-width: 0.2rem;
+}
+
+.card .blog-post-badge-pinned {
+  background-color: var(--edifice-purple-200) !important;
+  border: none;
+  color: var(--edifice-purple) !important;
+  font-weight: 400;
+}
+
 .blog-post-badge {
   font-family: var(--edifice-body-font-family) !important;
   text-transform: none;
