@@ -7,6 +7,7 @@ import { Post, PostMetadata, PostState } from '~/models/post';
 import {
   useDeletePost,
   useGoUpPost,
+  usePinPost,
   usePublishPost,
   useSavePost,
 } from '~/services/queries';
@@ -41,6 +42,8 @@ export interface PostActions {
   publish: (fromEditor?: boolean) => Promise<Post>;
   /** Action to move up a post; invalidates cached queries if needed. */
   goUp: () => Promise<PostMetadata>;
+  /** Action to pin a post: invalidates cached queries if needed. */
+  pinAction: (pinned: boolean) => Promise<PostMetadata>;
   /** Truthy when a mutation is currently pending on this blog post. */
   isMutating: boolean;
   /** Truthy when the post's state should be displayed in a badge. */
@@ -101,6 +104,7 @@ export const usePostActions = (
   const deleteMutation = useDeletePost(blogId, post._id);
   const publishMutation = usePublishPost(blogId);
   const goUpMutation = useGoUpPost(blogId, post._id);
+  const pinMutation = usePinPost(blogId, post._id);
   const emptyContent = isEmptyEditorContent(post.jsonContent);
 
   return {
@@ -110,7 +114,8 @@ export const usePostActions = (
       saveMutation.isPending ||
       deleteMutation.isPending ||
       publishMutation.isPending ||
-      goUpMutation.isPending,
+      goUpMutation.isPending ||
+      pinMutation.isPending,
     showBadge: creator || manager || contrib,
     showViews: creator || manager,
     /* WB-3071 */
@@ -160,6 +165,7 @@ export const usePostActions = (
         fromEditor,
       }),
     goUp: () => goUpMutation.mutateAsync(),
+    pinAction: (pinned: boolean) => pinMutation.mutateAsync(pinned),
     emptyContent,
   };
 };

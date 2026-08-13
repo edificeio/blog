@@ -26,6 +26,7 @@ export type PostMetadata = {
   state: PostState;
   views: number;
   nbComments: number;
+  pinned: boolean;
 };
 
 export type Post = PostMetadata & {

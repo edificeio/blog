@@ -1,4 +1,5 @@
 import { Avatar, Badge } from '@edifice.io/react';
+import { IconPinOn } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -64,6 +65,17 @@ export const PostPreviewHeader = ({ post }: PostPreviewHeaderProps) => {
               }}
             >
               {t('blog.filters.submitted')}
+            </Badge>
+          )}
+          {post.pinned && (
+            <Badge
+              className="blog-post-badge blog-post-badge-pinned ms-8"
+              variant={{
+                type: 'chip',
+              }}
+            >
+              <IconPinOn />
+              {t('post.pinned')}
             </Badge>
           )}
         </div>

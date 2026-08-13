@@ -111,6 +111,7 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
 
   const classes = clsx('p-24', {
     'blog-post-badge-highlight': post._id === sidebarHighlightedPost?._id,
+    'blog-post-pinned': post.pinned,
   });
 
   return (

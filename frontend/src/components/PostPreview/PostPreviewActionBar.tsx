@@ -50,6 +50,7 @@ export const PostPreviewActionBar = ({
     readOnly,
     isActionAvailable,
     goUp,
+    pinAction,
     publish,
     trash,
     isMutating,
@@ -61,6 +62,7 @@ export const PostPreviewActionBar = ({
 
   const [isDeleteModalOpen, toggleDeleteModalOpen] = useToggle();
   const [isGoUpModalOpen, toggleGoUpModalOpen] = useToggle();
+  const [isPinModalOpen, togglePinModalOpen] = useToggle();
 
   const { actionBarPostId, setActionBarPostId } = useBlogStore(
     useShallow((state) => ({
@@ -68,6 +70,10 @@ export const PostPreviewActionBar = ({
       setActionBarPostId: state.setActionBarPostId,
     })),
   );
+
+  const handlePinClick = () => {
+    togglePinModalOpen(true);
+  };
 
   const handleEditClick = () => {
     navigate(`/id/${blogId}/post/${post._id}?edit=true`);
@@ -102,6 +108,22 @@ export const PostPreviewActionBar = ({
 
   const handleGoUpClose = () => {
     toggleGoUpModalOpen(false);
+  };
+
+  const handlePinSuccess = () => {
+    pinAction(true);
+    togglePinModalOpen(false);
+    setActionBarPostId();
+  };
+
+  const handleUnpinSuccess = () => {
+    pinAction(false);
+    togglePinModalOpen(false);
+    setActionBarPostId();
+  };
+
+  const handlePinClose = () => {
+    togglePinModalOpen(false);
   };
 
   return (
@@ -153,6 +175,17 @@ export const PostPreviewActionBar = ({
               {t('goUp')}
             </Button>
           )}
+        {post.state === PostState.PUBLISHED &&
+          isActionAvailable(ACTION.MOVE) && (
+            <Button
+              type="button"
+              color="primary"
+              variant="filled"
+              onClick={handlePinClick}
+            >
+              {post.pinned ? t('post.unpin') : t('post.pin')}
+            </Button>
+          )}
         <Button
           type="button"
           color="primary"
@@ -192,6 +225,30 @@ export const PostPreviewActionBar = ({
             body={<p className="body">{t('confirm.up.post')}</p>}
             onSuccess={handleGoUpSuccess}
             onCancel={handleGoUpClose}
+          />
+        )}
+        {isPinModalOpen && (
+          <ConfirmModal
+            id="confirmPinModal"
+            isOpen={isPinModalOpen}
+            variant="ok/cancel"
+            header={
+              <>
+                {post.pinned
+                  ? t('confirm.unpin.header')
+                  : t('confirm.pin.header')}
+              </>
+            }
+            body={
+              post.pinned ? (
+                <p className="body">{t('confirm.unpin.body')}</p>
+              ) : (
+                <p className="body">{t('confirm.pin.body')}</p>
+              )
+            }
+            okText={post.pinned ? t('confirm.unpin.ok') : t('confirm.pin.ok')}
+            onSuccess={post.pinned ? handleUnpinSuccess : handlePinSuccess}
+            onCancel={handlePinClose}
           />
         )}
       </Suspense>
