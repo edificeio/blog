@@ -252,9 +252,14 @@ public class DefaultPostService implements PostService {
 						}
 					}
 					MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-					for (String attr: validatedPost.fieldNames()) {
-						modifier.set(attr, validatedPost.getValue(attr));
-					}
+                    for (String attr: validatedPost.fieldNames()) {
+                        // Handle unpin case: instead of writing pinned = false, unset the attribute
+                        if(attr.equals("pinned") && !validatedPost.getBoolean(attr, false)) {
+                            modifier.unset(attr);
+                        } else {
+                            modifier.set(attr, validatedPost.getValue(attr));
+                        }
+                    }
 					if(postFromDb.containsKey(TRANSFORMED_CONTENT_DB_FIELD_NAME)) {
 						modifier.unset(TRANSFORMED_CONTENT_DB_FIELD_NAME);
 					}
