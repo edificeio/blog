@@ -24,10 +24,10 @@
     </repository>
   </repositories>
   <properties>
-    <entCoreVersion>6.16-SNAPSHOT</entCoreVersion>
-    <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
+    <entCoreVersion>6.16-develop-enabling-SNAPSHOT</entCoreVersion>
+    <entCoreLibsVersion>6.16-develop-enabling-SNAPSHOT</entCoreLibsVersion>
     <junitVersion>4.13.2</junitVersion>
-    <explorerVersion>2.6-SNAPSHOT</explorerVersion>
+    <explorerVersion>2.6-develop-enabling-SNAPSHOT</explorerVersion>
     <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
     <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
   </properties>
