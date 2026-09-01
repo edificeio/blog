@@ -6,6 +6,7 @@ import { LoaderFunctionArgs, useLoaderData, useParams } from 'react-router-dom';
 
 import { Editor } from '@edifice.io/react/editor';
 import { postContentActions } from '~/config/postContentActions';
+import '~/features/Blog/print.css';
 import { PostTitle } from '~/features/Post/PostTitle';
 import { PostMetadata } from '~/models/post';
 import {
@@ -51,7 +52,7 @@ export function Component() {
   if (!blogId || !post) return <LoadingScreen />;
 
   return (
-    <div className="rounded border p-16 bg-white">
+    <div className="rounded border p-16 bg-white print-post">
       <PostTitle post={post} mode="print" />
       <div className="mx-32">
         <Editor content={post.content} mode="read" variant="ghost" />

@@ -1,0 +1,24 @@
+@media print {
+  .print-posts {
+    display: block !important;
+    gap: 0 !important;
+  }
+
+  .print-post {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  img,
+  figure,
+  .media-node-view,
+  .custom-image {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .media-node-view {
+    position: static !important;
+  }
+}

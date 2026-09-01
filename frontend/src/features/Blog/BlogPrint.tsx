@@ -39,9 +39,9 @@ export function BlogPrint() {
       </div>
       {!isSuccess && hasNextPage && <LoadingScreen />}
       <div className="d-flex flex-fill bg-white">
-        <div className="flex-fill py-16 ps-16 d-flex flex-column gap-16">
+        <div className="flex-fill py-16 ps-16 d-flex flex-column gap-16 print-posts">
           {posts.map((post) => (
-            <div key={post._id} className="rounded border pt-16">
+            <div key={post._id} className="rounded border pt-16 print-post">
               <PostTitle post={post} mode="print" />
               <div className="mx-32">
                 <Editor content={post.content} mode="read" variant="ghost" />
