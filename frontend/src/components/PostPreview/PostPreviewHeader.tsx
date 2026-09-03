@@ -39,34 +39,36 @@ export const PostPreviewHeader = ({ post }: PostPreviewHeaderProps) => {
           variant="circle"
         />
       </div>
-      <div className="d-flex flex-column gap-2">
-        <div className="d-flex align-items-center">
-          <h4 className="post-preview-title">{post.title}</h4>
-          {post.state === PostState.DRAFT &&
-            (creator || manager || contrib) && (
+      <div className="d-flex flex-column gap-2 flex-grow-1 min-width-0">
+        <div className="d-flex align-items-center justify-content-between me-16">
+          <div className="d-flex align-items-center">
+            <h4 className="post-preview-title">{post.title}</h4>
+            {post.state === PostState.DRAFT &&
+              (creator || manager || contrib) && (
+                <Badge
+                  className="ms-8"
+                  variant={{
+                    type: 'content',
+                    level: 'info',
+                    background: true,
+                  }}
+                >
+                  {t('draft')}
+                </Badge>
+              )}
+            {post.state === PostState.SUBMITTED && (
               <Badge
-                className="ms-8"
+                className="blog-post-badge ms-8"
                 variant={{
                   type: 'content',
-                  level: 'info',
+                  level: 'warning',
                   background: true,
                 }}
               >
-                {t('draft')}
+                {t('blog.filters.submitted')}
               </Badge>
             )}
-          {post.state === PostState.SUBMITTED && (
-            <Badge
-              className="blog-post-badge ms-8"
-              variant={{
-                type: 'content',
-                level: 'warning',
-                background: true,
-              }}
-            >
-              {t('blog.filters.submitted')}
-            </Badge>
-          )}
+          </div>
           {post.pinned && (
             <Badge
               className="blog-post-badge blog-post-badge-pinned ms-8"
