@@ -46,6 +46,8 @@ public interface BlogService {
 	List<String> UPDATABLE_FIELDS = Arrays.asList("title", "description",
 			"thumbnail", "comment-type", "modified", "publish-type", "trashed", "visibility", "slug", "allowReplies");
 
+	int TITLE_MAX_LENGTH = 60;
+
 	BlogExplorerPlugin getPlugin();
 
 	void create(JsonObject blog, UserInfos author, boolean isPublic, Handler<Either<String, JsonObject>> result);

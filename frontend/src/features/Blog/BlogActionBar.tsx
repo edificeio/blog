@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { ButtonGroup } from '~/components/ButtonGroup/ButtonGroup';
 import { blogActions } from '~/config/blogActions';
+import { TTITLE_LENGTH_MAX } from '~/config/init-config';
 import { ActionBarContainer } from '~/features/ActionBar/ActionBarContainer';
 import { Blog } from '~/models/blog';
 import { baseUrl } from '~/routes';
@@ -242,6 +243,7 @@ export const BlogActionBar = ({ blog }: BlogActionBarProps) => {
             mode="update"
             isOpen={isUpdateModalOpen}
             resourceId={blog._id}
+            inputMaxLength={TTITLE_LENGTH_MAX}
             onCancel={handleEditClose}
             onSuccess={handleEditSuccess}
           >

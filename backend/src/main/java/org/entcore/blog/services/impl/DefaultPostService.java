@@ -1043,6 +1043,14 @@ public class DefaultPostService implements PostService {
 			result.handle(new Either.Left<String, JsonObject>("Validation error : invalids fields."));
 			return true;
 		}
+		final String title = b.getString("title");
+		// codePointCount, not length(): length() counts UTF-16 units, so a title made of
+		// emoji would be flagged too early.
+		if (title != null && title.codePointCount(0, title.length()) > PostService.TITLE_MAX_LENGTH) {
+			result.handle(new Either.Left<String, JsonObject>(
+					"Validation error : title exceeds max length of " + PostService.TITLE_MAX_LENGTH + " characters."));
+			return true;
+		}
 		return false;
 	}
 

@@ -48,6 +48,8 @@ public interface PostService extends AudienceRightChecker {
 
 	List<String> UPDATABLE_FIELDS = Arrays.asList("title", "content", "modified");
 
+	int TITLE_MAX_LENGTH = 60;
+
 	void create(String blogId, JsonObject post, UserInfos author,
 			Handler<Either<String, JsonObject>> result,
 			final HttpServerRequest httpCallerRequest);
