@@ -22,7 +22,7 @@ export function Blog() {
       <BlogHeader blog={blog} readonly={publicView} />
       <div className="d-flex flex-fill">
         <BlogSidebar />
-        <div className="flex-fill py-16 ps-md-16 d-flex flex-column">
+        <div className="flex-fill py-16 px-md-32 px-lg-64 d-flex flex-column">
           {!publicView && !!counters?.countAll && <BlogFilter blog={blog} />}
           <BlogPostList />
         </div>
