@@ -109,7 +109,7 @@ export const PostPreview = ({ post, index }: PostPreviewProps) => {
     navigate(`./post/${post?._id}`);
   };
 
-  const classes = clsx('p-24', {
+  const classes = clsx('p-24 post-card', {
     'blog-post-badge-highlight': post._id === sidebarHighlightedPost?._id,
     'blog-post-pinned': post.pinned,
   });
