@@ -106,6 +106,10 @@ main {
   border-left: 1px solid var(--edifice-gray-700);
 }
 
+.card.post-card {
+  border-radius: var(--edifice-border-radius-2xl);
+}
+
 .post-preview-content,
 .post-preview-title {
   overflow-wrap: anywhere;
