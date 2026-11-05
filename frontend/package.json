@@ -1,6 +1,6 @@
 {
   "name": "blog",
-  "version": "5.5.17-develop.0",
+  "version": "5.5.0-develop-b2school.0",
   "description": "Blog tool for ENT Core.",
   "homepage": "https://github.com/opendigitaleducation/blog#readme",
   "bugs": {
@@ -39,10 +39,10 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/bootstrap": "develop",
-    "@edifice.io/client": "develop",
-    "@edifice.io/react": "develop",
-    "@edifice.io/utilities": "develop",
+    "@edifice.io/bootstrap": "develop-b2school",
+    "@edifice.io/client": "develop-b2school",
+    "@edifice.io/react": "develop-b2school",
+    "@edifice.io/utilities": "develop-b2school",
     "@react-spring/web": "9.7.5",
     "@tanstack/react-query": "5.81.5",
     "clsx": "2.1.1",
