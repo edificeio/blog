@@ -24,8 +24,8 @@
     </repository>
   </repositories>
   <properties>
-    <entCoreVersion>6.17-SNAPSHOT</entCoreVersion>
-    <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
+    <entCoreVersion>6.17-develop-b2school-SNAPSHOT</entCoreVersion>
+    <entCoreLibsVersion>6.16-develop-b2school-SNAPSHOT</entCoreLibsVersion>
     <junitVersion>4.13.2</junitVersion>
     <explorerVersion>2.6-SNAPSHOT</explorerVersion>
     <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
