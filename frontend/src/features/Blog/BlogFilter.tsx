@@ -3,11 +3,10 @@ import { useEffect, useState } from 'react';
 import {
   Badge,
   SearchBar,
-  Toolbar,
-  ToolbarItem,
+  SegmentedControl,
+  SegmentedOption,
   useDebounce,
 } from '@edifice.io/react';
-import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
 import usePostsFilter from '~/hooks/usePostsFilter';
@@ -48,71 +47,36 @@ export const BlogFilter = ({ blog }: BlogFilterProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounceSearch, state]);
 
-  const filterToolbar: ToolbarItem[] = [
+  const filterOptions: SegmentedOption[] = [
     {
-      type: 'button',
-      name: 'published',
-      props: {
-        className: clsx('fw-normal h-full py-4 px-8 fs-6', {
-          'bg-secondary-200 fw-bold': state === PostState.PUBLISHED,
-        }),
-        children: (
-          <span>
-            {t('blog.filters.published', { count: counters?.countPublished })}
-          </span>
-        ),
-        onClick: () => {
-          handleFilter(PostState.PUBLISHED);
-        },
-      },
+      label: t('blog.filters.published', { count: counters?.countPublished }),
+      value: PostState.PUBLISHED,
     },
-    {
-      type: 'button',
-      name: 'submitted',
-      visibility: blog['publish-type'] === 'RESTRAINT' ? 'show' : 'hide',
-      props: {
-        className: clsx('fw-normal h-full py-4 px-8 fs-6', {
-          'bg-secondary-200 fw-bold': state === PostState.SUBMITTED,
-        }),
-        children: (
-          <>
-            <span>{t('blog.filters.submitted')} </span>
-            {counters?.countSubmitted ? (
+    ...(blog['publish-type'] === 'RESTRAINT'
+      ? [
+          {
+            label: t('blog.filters.submitted'),
+            value: PostState.SUBMITTED,
+            badge: counters?.countSubmitted ? (
               <Badge
                 variant={{
                   level: 'warning',
                   type: 'notification',
                 }}
                 style={{ height: 'auto' }}
+                data-testid="blog-filter-submitted-badge"
               >
                 {counters.countSubmitted}
               </Badge>
             ) : (
-              0
-            )}
-          </>
-        ),
-        onClick: () => {
-          handleFilter(PostState.SUBMITTED);
-        },
-      },
-    },
+              <span>0</span>
+            ),
+          },
+        ]
+      : []),
     {
-      type: 'button',
-      name: 'draft',
-      props: {
-        className: clsx('fw-normal h-full py-4 px-8 fs-6', {
-          'bg-secondary-200 fw-bold': state === PostState.DRAFT,
-        }),
-        children: (
-          <span>
-            {t('blog.filters.drafts', { count: counters?.countDraft })}
-          </span>
-        ),
-        onClick: () => {
-          handleFilter(PostState.DRAFT);
-        },
-      },
+      label: t('blog.filters.drafts', { count: counters?.countDraft }),
+      value: PostState.DRAFT,
     },
   ];
   return (
@@ -123,13 +87,16 @@ export const BlogFilter = ({ blog }: BlogFilterProps) => {
         onChange={handlerSearch}
         placeholder={t('blog.search.bar.placeholder')}
         size="md"
+        data-testid="blog-filter-search-input"
       />
       {(manager || creator || contrib) && (
-        <Toolbar
-          variant="no-shadow"
-          className="px-4 py-2 ms-md-16 border border-secondary-200 rounded-3 blog-filter-toolbar flex-nowrap row-gap-4 overflow-auto align-items-stretch"
-          items={filterToolbar}
-        ></Toolbar>
+        <SegmentedControl
+          className="ms-md-16"
+          data-testid="blog-filter-state-segmented"
+          options={filterOptions}
+          value={state}
+          onChange={(value) => handleFilter(value as PostState)}
+        />
       )}
     </div>
   );
