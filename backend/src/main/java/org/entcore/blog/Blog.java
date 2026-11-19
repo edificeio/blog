@@ -35,6 +35,9 @@ import org.entcore.blog.controllers.*;
 import org.entcore.blog.events.BlogSearchingEvents;
 import org.entcore.blog.explorer.BlogExplorerPlugin;
 import org.entcore.blog.explorer.PostExplorerPlugin;
+import org.entcore.blog.listeners.ArchiveResourceBrokerListenerImpl;
+import org.entcore.blog.listeners.BlogArchiveExporter;
+import org.entcore.blog.listeners.BlogArchiveImporter;
 import org.entcore.blog.listeners.ResourceBrokerListenerImpl;
 import org.entcore.blog.security.BlogResourcesProvider;
 import org.entcore.blog.services.BlogService;
@@ -44,6 +47,7 @@ import org.entcore.blog.services.impl.DefaultBlogService;
 import org.entcore.blog.services.impl.DefaultPostService;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
+import org.entcore.common.archive.ArchiveFolderFactory;
 import org.entcore.common.audience.AudienceHelper;
 import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
@@ -55,6 +59,7 @@ import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.resources.ResourceBrokerRepositoryEvents;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.ShareBrokerListenerImpl;
+import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.RepositoryEvents;
 
 import java.util.HashMap;
@@ -135,7 +140,15 @@ public class Blog extends BaseServer {
         // add broker listener for share service
         final ShareService shareService = blogPlugin.createShareService(BlogService.getGroupedActions(securedActions.values()));
         BrokerProxyUtils.addBrokerProxy(new ShareBrokerListenerImpl(this.securedActions, shareService), vertx, new AddressParameter("application", "blog"));
-        return Future.succeededFuture();
+        final int exportConcurrency = config.getInteger("export-concurrency", BlogArchiveExporter.DEFAULT_EXPORT_CONCURRENCY);
+        final int importConcurrency = config.getInteger("import-concurrency", BlogArchiveImporter.DEFAULT_IMPORT_CONCURRENCY);
+        return StorageFactory.build(vertx, config).map(storageFactory -> {
+          BrokerProxyUtils.addBrokerProxy(
+              new ArchiveResourceBrokerListenerImpl(ArchiveFolderFactory.from(storageFactory.getStorage()), exportConcurrency, importConcurrency, vertx,
+                  pluginClientPerCollection), vertx,
+              new AddressParameter("application", "blog"));
+          return null;
+        });
       });
   }
 
