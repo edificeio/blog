@@ -95,30 +95,30 @@ export default (context: InitData) => {
     http.get(`${rootUrl}/blog/id/${blog.id}?state=PUBLISHED`, { headers: getHeaders() });
     
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const events: EventDTO[] = getLastEventsOrFail(now, 'events');
+    const events: EventDTO[] = getLastEventsOrFail(now, 'events').sort((a, b) => a.date - b.date);
     console.log(`Events since ${now} : ${JSON.stringify(events)}`);
     check(events, {
-      "Should have 4 events (creation, accesses and admc login)": (events) => events.length >= 4,
+      "Should have 3 events (creation, deduplicated access and admc login)": (events) => events.length >= 3,
       "First event is for the creation of the blog": (events) => {
         const creationEvent = events[0];
-        return creationEvent['resource-type'] === "blog_private" &&
+        return !!creationEvent &&
+               creationEvent['resource-type'] === "blog_private" &&
                creationEvent['event-type'] === "CREATE" &&
                creationEvent.module === "Blog" &&
                creationEvent.userId === user.id &&
                creationEvent.profil === 'Teacher';
       },
-      "Second and third event is for blog page acesses": (events) => {
-        const accessEvents = [events[1], events[2]];
-        return accessEvents.every((event) => 
-          event['event-type'] === "ACCESS" &&
-          event.module === "Blog" &&
-          event.userId === user.id &&
-          event.profil === 'Teacher'
-        );
+      "Second event is for blog page accesses (deduplicated)": (events) => {
+        const accessEvent = events[1];
+        return !!accessEvent &&
+          accessEvent['event-type'] === "ACCESS" &&
+          accessEvent.module === "Blog" &&
+          accessEvent.userId === user.id &&
+          accessEvent.profil === 'Teacher';
       },
-      "Fourth event is for ADMC login": (events) => {
-        const loginEvent = events[3];
-        return loginEvent['event-type'] === "LOGIN" &&
+      "Third event is for ADMC login": (events) => {
+        const loginEvent = events[2];
+        return !!loginEvent && loginEvent['event-type'] === "LOGIN" &&
                loginEvent.module === "Auth";
       },
     });

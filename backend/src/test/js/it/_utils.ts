@@ -9,7 +9,7 @@ import {
 const rootUrl = __ENV.ROOT_URL;
 
 export function createBlog(blogName, session, commentType='NONE', publishType='RESTRAINT') {
-    const headers = getHeaders(session);
+    const headers = getHeaders();
     headers['content-type'] = 'application/json'
     const payload = JSON.stringify({
     title: blogName,
@@ -29,14 +29,14 @@ export function createBlog(blogName, session, commentType='NONE', publishType='R
 }
 
 export function getBlog(blogId, session) {
-    const res = http.get(`${rootUrl}/blog/${blogId}`, {headers: getHeaders(session)})
+    const res = http.get(`${rootUrl}/blog/${blogId}`, {headers: getHeaders()})
     const blog = JSON.parse(res.body)
     blog.id = blog._id;
     return blog;
 }
 
 export function addShareToUser(blog, user, shareType, session) {
-    const headers = getHeaders(session)
+    const headers = getHeaders()
     const res = http.get(`${rootUrl}/blog/share/json/${blog.id}`, {headers})
     assertOk(res);
     const existingShares = JSON.parse(res.body);
@@ -59,13 +59,13 @@ export function shareBlog(blog, shares, session) {
     const res = http.put(
         `${rootUrl}/blog/share/resource/${blog.id}`,
         JSON.stringify(shares),
-        {headers: getHeaders(session)});
+        {headers: getHeaders()});
     sleep(1); // Let the backend digests the new shares.
     return res;
 }
 
 export function createPost(title, content, blog, session) {
-    const headers = getHeaders(session)
+    const headers = getHeaders()
     headers['content-type'] = 'application/json'
     const postPayload = JSON.stringify({
         title,
@@ -82,19 +82,19 @@ export function createPost(title, content, blog, session) {
 }
 
 export function submitPost(blog, post, session) {
-    const headers = getHeaders(session)
+    const headers = getHeaders()
     headers['content-type'] = 'application/json'
     return http.put(`${rootUrl}/blog/post/submit/${blog.id}/${post.id}`, {}, {headers});
 }
 
 export function publishPost(blog, post, session) {
-    const headers = getHeaders(session)
+    const headers = getHeaders()
     headers['content-type'] = 'application/json'
     return http.put(`${rootUrl}/blog/post/publish/${blog.id}/${post.id}`, {}, {headers});
 }
 
 export function getPost(blogId, postId, state, session) {
-    const res = http.get(`${rootUrl}/blog/post/${blogId}/${postId}?state=${state}`, {headers: getHeaders(session)})
+    const res = http.get(`${rootUrl}/blog/post/${blogId}/${postId}?state=${state}`, {headers: getHeaders()})
     if(res.status === 200) {
         const post = JSON.parse(res.body);
         post.id = post._id;
@@ -106,18 +106,18 @@ export function getPost(blogId, postId, state, session) {
 
 export function deletePost(blog, post, session) {
     console.log("Deleting post.....")
-    return http.del(`${rootUrl}/blog/post/${blog.id}/${post.id}`, {headers: getHeaders(session)})
+    return http.del(`${rootUrl}/blog/post/${blog.id}/${post.id}`, null, {headers: getHeaders()})
 }
 
 export function getComments(blog, post, session) {
-    const res = http.get(`${rootUrl}/blog/comments/${blog.id}/${post.id}`, {headers: getHeaders(session)});
+    const res = http.get(`${rootUrl}/blog/comments/${blog.id}/${post.id}`, {headers: getHeaders()});
     assertOk(res, 'get comments');
     const comments = JSON.parse(res.body);
     return comments;
 }
 
 export function createComment(blog, post, text, session) {
-    const headers = getHeaders(session);
+    const headers = getHeaders();
     headers['content-type'] = 'application/json';
     const payload = JSON.stringify({
         comment: text,
@@ -134,7 +134,7 @@ export function createComment(blog, post, text, session) {
 }
 
 export function updateComment(blog, post, comment, text, session) {
-    const headers = getHeaders(session);
+    const headers = getHeaders();
     headers['content-type'] = 'application/json';
     const payload = JSON.stringify({
         comment: text,
@@ -144,7 +144,7 @@ export function updateComment(blog, post, comment, text, session) {
 
 export function deleteComment(blog, post, comment, session) {
     console.log("Deleting comment.....")
-    const res = http.del(`${rootUrl}/blog/comment/${blog.id}/${post.id}/${comment.id}`, {}, {headers: getHeaders(session)});
+    const res = http.del(`${rootUrl}/blog/comment/${blog.id}/${post.id}/${comment.id}`, null, {headers: getHeaders()});
     assertOk(res, 'delete comment');
     return res;
 }
