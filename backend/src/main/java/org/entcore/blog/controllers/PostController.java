@@ -64,6 +64,7 @@ import static org.entcore.common.user.UserUtils.getUserInfos;
 public class PostController extends BaseController {
 	public static final String LIST_ACTION = "org-entcore-blog-controllers-PostController|list";
 	public static final String SUBMIT_ACTION = "org-entcore-blog-controllers-PostController|submit";
+	public static final String DELETE_ACTION = "org-entcore-blog-controllers-PostController|delete";
 	private BlogTimelineService timelineService;
 	private int pagingSize;
 	private final EventHelper eventHelper;

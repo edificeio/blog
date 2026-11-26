@@ -256,7 +256,7 @@ public class BlogResourcesProvider implements ResourcesProvider {
 				return jsonRights.getBoolean(action, false) &&
 						(userId.equals(jsonRights.getString("userId"))
 								|| userGroups.contains(jsonRights.getString("groupId"))) &&
-					(!action.equalsIgnoreCase("delete") || isBlogAuthor);
+					(!PostController.DELETE_ACTION.equals(action) || isBlogAuthor);
 			});
 			return isBlogAuthor || hasShareRights;
 		});

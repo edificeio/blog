@@ -106,7 +106,7 @@ export function getPost(blogId, postId, state, session) {
 
 export function deletePost(blog, post, session) {
     console.log("Deleting post.....")
-    return http.del(`${rootUrl}/blog/post/${blog.id}/${post.id}`, {headers: getHeaders(session)})
+    return http.del(`${rootUrl}/blog/post/${blog.id}/${post.id}`, null, {headers: getHeaders(session)})
 }
 
 export function getComments(blog, post, session) {
